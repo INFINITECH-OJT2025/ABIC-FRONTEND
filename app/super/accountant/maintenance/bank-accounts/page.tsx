@@ -44,8 +44,6 @@ type BankAccount = {
   bank?: Bank | null;
 };
 
-const BORDER = "rgba(0,0,0,0.12)";
-
 const formatDate = (dateString: string | null | undefined): string => {
   if (!dateString) return "Not available";
   try {
@@ -95,7 +93,7 @@ const Pagination = ({
   if (!paginationMeta || paginationMeta.total === 0) return null;
 
   return (
-    <div className="flex items-center justify-between py-3 border-b" style={{ borderColor: BORDER }}>
+    <div className="flex items-center justify-between py-3 border-b border-gray-100">
       <div className="text-sm text-neutral-600">
         Showing {paginationMeta.from} to {paginationMeta.to} of {paginationMeta.total} {itemName}
       </div>
@@ -104,8 +102,7 @@ const Pagination = ({
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={paginationMeta.current_page === 1}
-            className="px-3 py-1.5 rounded-md text-sm font-medium border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-            style={{ borderColor: BORDER }}
+            className="px-3 py-1.5 rounded-xl text-sm font-medium border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7B0F2B]/5 hover:border-[#7B0F2B]/30 transition-all"
           >
             Previous
           </button>
@@ -117,10 +114,9 @@ const Pagination = ({
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium ${
-                      paginationMeta.current_page === page ? "bg-[#7a0f1f] text-white" : "border hover:bg-gray-50"
+                    className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all ${
+                      paginationMeta.current_page === page ? "bg-[#7B0F2B] text-white" : "border border-gray-200 hover:bg-gray-50"
                     }`}
-                    style={paginationMeta.current_page !== page ? { borderColor: BORDER } : undefined}
                   >
                     {page}
                   </button>
@@ -134,8 +130,7 @@ const Pagination = ({
           <button
             onClick={() => setCurrentPage((p) => Math.min(paginationMeta.last_page, p + 1))}
             disabled={paginationMeta.current_page === paginationMeta.last_page}
-            className="px-3 py-1.5 rounded-md text-sm font-medium border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-            style={{ borderColor: BORDER }}
+            className="px-3 py-1.5 rounded-xl text-sm font-medium border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7B0F2B]/5 hover:border-[#7B0F2B]/30 transition-all"
           >
             Next
           </button>
@@ -147,11 +142,11 @@ const Pagination = ({
 
 // Skeleton Components
 const BankAccountCardSkeleton = () => (
-  <div className="rounded-md bg-white border shadow-sm p-4" style={{ borderColor: BORDER }}>
+  <div className="rounded-xl bg-white border border-gray-100 shadow-sm p-4">
     <div className="animate-pulse">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3 flex-1">
-          <div className="w-10 h-10 bg-gray-200 rounded-md" />
+          <div className="w-10 h-10 bg-gray-200 rounded-xl" />
           <div className="flex-1">
             <div className="h-4 bg-gray-200 w-3/4 mb-2 rounded" />
             <div className="h-3 bg-gray-200 w-1/2 rounded" />
@@ -161,7 +156,7 @@ const BankAccountCardSkeleton = () => (
       </div>
       <div className="flex items-center justify-between">
         <div className="h-3 bg-gray-200 w-24 rounded" />
-        <div className="h-8 bg-gray-200 w-20 rounded-md" />
+        <div className="h-8 bg-gray-200 w-20 rounded-xl" />
       </div>
     </div>
   </div>
@@ -169,7 +164,7 @@ const BankAccountCardSkeleton = () => (
 
 const BankAccountTableSkeleton = () => (
   <div>
-    <div className="rounded-md border bg-neutral-50 px-4 py-0 mb-3" style={{ borderColor: BORDER }}>
+    <div className="rounded-xl border border-gray-100 bg-gray-50/50 px-4 py-0 mb-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4 flex-1 min-w-0">
           <div className="w-12 h-12 shrink-0"></div>
@@ -190,10 +185,10 @@ const BankAccountTableSkeleton = () => (
     </div>
     <div className="space-y-3">
       {[...Array(5)].map((_, i) => (
-        <div key={i} className="rounded-md bg-white border shadow-sm p-4" style={{ borderColor: BORDER }}>
+        <div key={i} className="rounded-xl bg-white border border-gray-100 shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4 flex-1 min-w-0">
-              <div className="w-12 h-12 bg-gray-200 rounded-md animate-pulse" />
+              <div className="w-12 h-12 bg-gray-200 rounded-xl animate-pulse" />
               <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-5 gap-2">
                 {[...Array(5)].map((_, j) => (
                   <div key={j}>
@@ -205,8 +200,8 @@ const BankAccountTableSkeleton = () => (
             </div>
             <div className="flex items-center gap-3 shrink-0">
               <div className="h-4 bg-gray-200 w-20 animate-pulse rounded" />
-              <div className="h-8 bg-gray-200 w-16 animate-pulse rounded-md" />
-              <div className="h-8 bg-gray-200 w-20 animate-pulse rounded-md" />
+              <div className="h-8 bg-gray-200 w-16 animate-pulse rounded-xl" />
+              <div className="h-8 bg-gray-200 w-20 animate-pulse rounded-xl" />
             </div>
           </div>
         </div>
@@ -237,7 +232,7 @@ export default function BankAccountsPage() {
   
   // Get initial values from URL params or defaults
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
-  const [statusFilter, setStatusFilter] = useState<"ACTIVE" | "INACTIVE">((searchParams.get("status") as "ACTIVE" | "INACTIVE") || "ACTIVE");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">((searchParams.get("status") as "ALL" | "ACTIVE" | "INACTIVE") || "ALL");
   const [accountTypeFilter, setAccountTypeFilter] = useState<AccountType | "ALL">((searchParams.get("account_type") as AccountType | "ALL") || "ALL");
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get("page") || "1", 10));
   const [sortBy, setSortBy] = useState<"date" | "name">((searchParams.get("sort_by") as "date" | "name") || "date");
@@ -327,7 +322,7 @@ export default function BankAccountsPage() {
       if (searchQuery.trim()) {
         url.searchParams.append("search", searchQuery.trim());
       }
-      if (statusFilter) {
+      if (statusFilter && statusFilter !== "ALL") {
         url.searchParams.append("status", statusFilter);
       }
       if (accountTypeFilter && accountTypeFilter !== "ALL") {
@@ -372,11 +367,16 @@ export default function BankAccountsPage() {
   const fetchOwners = async () => {
     setLoadingOwners(true);
     try {
-      const res = await fetch("/api/accountant/maintenance/owners?per_page=all&status=active");
+      const res = await fetch("/api/accountant/maintenance/owners?per_page=all&status=ACTIVE");
       const data = await res.json();
       if (res.ok && data.success) {
         const ownersList = data.data?.data || data.data || [];
-        setOwners(Array.isArray(ownersList) ? ownersList : []);
+        const list = Array.isArray(ownersList) ? ownersList : [];
+        // Include MAIN, COMPANY, CLIENT only (exclude SYSTEM)
+        setOwners(list.filter((o: Owner) => {
+          const type = (o.owner_type ?? "").toString().toUpperCase();
+          return type !== "SYSTEM";
+        }));
       } else {
         setOwners([]);
       }
@@ -407,17 +407,26 @@ export default function BankAccountsPage() {
   };
 
   const filteredOwners = useMemo(() => {
-    if (!ownerSearchQuery.trim()) {
-      return owners.filter(o => o.status === "active");
-    }
+    const activeOwners = owners.filter((o) => {
+      const status = (o.status ?? "ACTIVE").toString().toUpperCase();
+      const type = (o.owner_type ?? "").toString().toUpperCase();
+      return status === "ACTIVE" && type !== "SYSTEM";
+    });
+    if (!ownerSearchQuery.trim()) return activeOwners;
     const q = ownerSearchQuery.toLowerCase();
-    return owners.filter(
+    return activeOwners.filter(
       (owner) =>
-        owner.status === "active" &&
-        (owner.name?.toLowerCase().includes(q) ||
-          owner.owner_type?.toLowerCase().includes(q))
+        owner.name?.toLowerCase().includes(q) ||
+        owner.owner_type?.toLowerCase().includes(q)
     );
   }, [owners, ownerSearchQuery]);
+
+  const summaryStats = useMemo(() => {
+    const total = paginationMeta?.total ?? bankAccounts.length;
+    const active = bankAccounts.filter((a) => (a.status ?? "ACTIVE").toString().toUpperCase() === "ACTIVE").length;
+    const inactive = bankAccounts.filter((a) => (a.status ?? "ACTIVE").toString().toUpperCase() === "INACTIVE").length;
+    return { total, active, inactive };
+  }, [bankAccounts, paginationMeta]);
 
   const filteredBanks = useMemo(() => {
     if (!bankSearchQuery.trim()) {
@@ -724,107 +733,150 @@ export default function BankAccountsPage() {
   }, [detailFormData.bank_id, banks, detailDrawerOpen]);
 
   return (
-    <div className="min-h-full flex flex-col">
-      {/* Compact Bank Accounts bar - extension of sidebar */}
-      <div className="bg-gradient-to-r from-[#A4163A] to-[#7B0F2B] text-white px-6 py-5 flex items-center shrink-0 border-b border-[#6A0D25]/30">
-        <h1 className="text-lg font-semibold tracking-wide">Bank Accounts</h1>
+    <div className="min-h-full flex flex-col bg-gray-50/80">
+      {/* Hero Header */}
+      <div className="sticky top-0 z-20 shrink-0 relative overflow-hidden bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white px-6 py-8">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50" />
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center border border-white/20">
+              <Banknote className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">Bank Accounts</h1>
+              <p className="text-white/80 text-sm mt-0.5">Manage bank accounts and their opening balances</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowCreatePanel(true)}
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold bg-white text-[#7B0F2B] hover:bg-white/95 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+          >
+            <Plus className="w-4 h-4" />
+            Create Bank Account
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
-        <section className="rounded-md bg-white p-5 shadow-sm border" style={{ borderColor: BORDER }}>
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-[#5f0c18]">Bank Account List</h2>
-              <p className="text-sm text-gray-600 mt-1">Manage bank accounts and their opening balances</p>
+      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-8 -mt-4">
+        <section className="rounded-2xl bg-white shadow-sm border border-gray-100 overflow-hidden">
+          {/* Summary Stats - Card row */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-6 bg-gray-50/50 border-b border-gray-100">
+            <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-[#7B0F2B]/10 flex items-center justify-center">
+                  <Banknote className="w-5 h-5 text-[#7B0F2B]" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-gray-900">{summaryStats.total}</div>
+                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Total</div>
+                </div>
+              </div>
             </div>
-            <button
-              onClick={() => setShowCreatePanel(true)}
-              className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-white hover:opacity-95"
-              style={{ background: "#7a0f1f", height: 40 }}
-            >
-              <Plus className="w-4 h-4" />
-              Create Bank Account
-            </button>
+            <div className="bg-white rounded-xl p-4 border border-emerald-100 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-emerald-700">{summaryStats.active}</div>
+                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Active</div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-gray-500" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-gray-700">{summaryStats.inactive}</div>
+                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Inactive</div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mt-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-6">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-sm font-medium text-gray-700">Status:</span>
               <button
-                onClick={() => setStatusFilter("ACTIVE")}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  statusFilter === "ACTIVE"
-                    ? "bg-[#7a0f1f] text-white"
-                    : "bg-white border text-gray-600 hover:bg-gray-50"
+                onClick={() => setStatusFilter("ALL")}
+                className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
+                  statusFilter === "ALL"
+                    ? "bg-[#7B0F2B] text-white"
+                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
                 }`}
-                style={statusFilter !== "ACTIVE" ? { borderColor: BORDER } : undefined}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setStatusFilter("ACTIVE")}
+                className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
+                  statusFilter === "ACTIVE"
+                    ? "bg-[#7B0F2B] text-white"
+                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+                }`}
               >
                 Active
               </button>
               <button
                 onClick={() => setStatusFilter("INACTIVE")}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
                   statusFilter === "INACTIVE"
-                    ? "bg-[#7a0f1f] text-white"
-                    : "bg-white border text-gray-600 hover:bg-gray-50"
+                    ? "bg-[#7B0F2B] text-white"
+                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
                 }`}
-                style={statusFilter !== "INACTIVE" ? { borderColor: BORDER } : undefined}
               >
                 Inactive
               </button>
               <span className="text-sm font-medium text-gray-700 ml-2">Type:</span>
               <button
                 onClick={() => setAccountTypeFilter("ALL")}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
                   accountTypeFilter === "ALL"
-                    ? "bg-[#7a0f1f] text-white"
-                    : "bg-white border text-gray-600 hover:bg-gray-50"
+                    ? "bg-[#7B0F2B] text-white"
+                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
                 }`}
-                style={accountTypeFilter !== "ALL" ? { borderColor: BORDER } : undefined}
               >
                 All
               </button>
               <button
                 onClick={() => setAccountTypeFilter("BANK")}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
                   accountTypeFilter === "BANK"
-                    ? "bg-[#7a0f1f] text-white"
-                    : "bg-white border text-gray-600 hover:bg-gray-50"
+                    ? "bg-[#7B0F2B] text-white"
+                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
                 }`}
-                style={accountTypeFilter !== "BANK" ? { borderColor: BORDER } : undefined}
               >
                 Bank
               </button>
               <button
                 onClick={() => setAccountTypeFilter("GCASH")}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
                   accountTypeFilter === "GCASH"
-                    ? "bg-[#7a0f1f] text-white"
-                    : "bg-white border text-gray-600 hover:bg-gray-50"
+                    ? "bg-[#7B0F2B] text-white"
+                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
                 }`}
-                style={accountTypeFilter !== "GCASH" ? { borderColor: BORDER } : undefined}
               >
                 GCash
               </button>
               <button
                 onClick={() => setAccountTypeFilter("CASH")}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
                   accountTypeFilter === "CASH"
-                    ? "bg-[#7a0f1f] text-white"
-                    : "bg-white border text-gray-600 hover:bg-gray-50"
+                    ? "bg-[#7B0F2B] text-white"
+                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
                 }`}
-                style={accountTypeFilter !== "CASH" ? { borderColor: BORDER } : undefined}
               >
                 Cash
               </button>
               <button
                 onClick={() => setAccountTypeFilter("INTERNAL")}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
                   accountTypeFilter === "INTERNAL"
-                    ? "bg-[#7a0f1f] text-white"
-                    : "bg-white border text-gray-600 hover:bg-gray-50"
+                    ? "bg-[#7B0F2B] text-white"
+                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
                 }`}
-                style={accountTypeFilter !== "INTERNAL" ? { borderColor: BORDER } : undefined}
               >
                 Internal
               </button>
@@ -832,8 +884,7 @@ export default function BankAccountsPage() {
             <div className="flex flex-wrap items-center gap-3">
               <button
                 onClick={() => fetchBankAccounts()}
-                className="p-2 rounded-md border hover:bg-gray-50 transition-colors"
-                style={{ borderColor: BORDER }}
+                className="p-2.5 rounded-xl border border-gray-200 hover:bg-[#7B0F2B]/5 hover:border-[#7B0F2B]/30 transition-colors"
                 title="Refresh"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -848,8 +899,7 @@ export default function BankAccountsPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search by account name, number, holder..."
-                  className="w-full rounded-md border bg-white px-10 py-2 text-sm outline-none"
-                  style={{ borderColor: BORDER, height: 40, color: "#111" }}
+                  className="w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 py-2.5 h-10 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                 />
               </div>
 
@@ -862,8 +912,7 @@ export default function BankAccountsPage() {
                     setSortBy(newSortBy);
                     setSortOrder(newSortOrder);
                   }}
-                  className="appearance-none rounded-md border bg-white px-4 py-2 pr-8 text-sm outline-none cursor-pointer hover:bg-gray-50"
-                  style={{ borderColor: BORDER, height: 40, color: "#111" }}
+                  className="appearance-none rounded-xl border border-gray-200 bg-white px-4 py-2.5 pr-8 h-10 text-sm outline-none cursor-pointer focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                 >
                   <option value="date-desc">Date Promoted (Newest First)</option>
                   <option value="date-asc">Date Promoted (Oldest First)</option>
@@ -896,7 +945,7 @@ export default function BankAccountsPage() {
               </div>
             ) : (
               <div>
-                <div className="rounded-md border bg-neutral-50 px-4 py-0 mb-3" style={{ borderColor: BORDER }}>
+                <div className="rounded-xl border border-gray-100 bg-gray-50/50 px-4 py-0 mb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4 flex-1 min-w-0">
                       <div className="w-12 h-12 shrink-0"></div>
@@ -919,13 +968,12 @@ export default function BankAccountsPage() {
                   {bankAccounts.map((account) => (
                     <div
                       key={account.id}
-                      className="rounded-md bg-white border shadow-sm p-4 hover:shadow-md transition-shadow"
-                      style={{ borderColor: BORDER }}
+                      className="rounded-xl bg-white border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4 flex-1 min-w-0">
-                          <div className="w-12 h-12 rounded-md bg-[#7a0f1f]/10 flex items-center justify-center shrink-0">
-                            <Banknote className="w-6 h-6 text-[#7a0f1f]" />
+                          <div className="w-12 h-12 rounded-xl bg-[#7B0F2B]/10 flex items-center justify-center shrink-0">
+                            <Banknote className="w-6 h-6 text-[#7B0F2B]" />
                           </div>
                           <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-5 gap-2">
                             <div className="min-w-0">
@@ -953,9 +1001,9 @@ export default function BankAccountsPage() {
                         <div className="flex items-center gap-3 shrink-0">
                           <div className="text-sm text-neutral-900 font-semibold w-24 text-right">{formatCurrency(account.opening_balance, account.currency)}</div>
                           <div
-                            className={`px-3 py-1.5 rounded-md text-xs font-semibold ${
+                            className={`px-3 py-1.5 rounded-xl text-xs font-semibold ${
                               account.status === "ACTIVE" ? "bg-green-100 text-green-700" : 
-                              account.status === "CLOSED" ? "bg-red-100 text-red-700" : 
+                              account.status === "INACTIVE" ? "bg-red-100 text-red-700" : 
                               "bg-gray-100 text-gray-700"
                             }`}
                           >
@@ -963,8 +1011,7 @@ export default function BankAccountsPage() {
                           </div>
                           <button
                             onClick={() => openDetailDrawer(account.id)}
-                            className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold text-white hover:opacity-95"
-                            style={{ background: "#7a0f1f", height: 32 }}
+className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold bg-[#7B0F2B] text-white hover:bg-[#8B1535] transition-colors"
                             title="View"
                           >
                             <EyeIcon />
@@ -991,7 +1038,7 @@ export default function BankAccountsPage() {
               aria-hidden="true"
             />
             <div
-              className="fixed top-0 right-0 bottom-0 w-full max-w-md h-screen bg-white z-50 flex flex-col rounded-md overflow-hidden shadow-xl"
+              className="fixed top-0 right-0 bottom-0 w-full max-w-md h-screen bg-white z-50 flex flex-col rounded-l-2xl overflow-hidden shadow-xl"
               style={{
                 animation: createPanelClosing
                   ? "slideOut 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards"
@@ -999,9 +1046,9 @@ export default function BankAccountsPage() {
                 boxShadow: "-8px 0 24px rgba(0,0,0,0.15)",
               }}
             >
-              <div className="flex-shrink-0 flex items-center justify-between p-4 bg-gradient-to-r from-[#800020] via-[#A0153E] to-[#C9184A] text-white">
+              <div className="flex-shrink-0 flex items-center justify-between p-5 bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white">
                 <h2 className="text-lg font-bold">Create Bank Account</h2>
-                <button onClick={closeCreatePanel} className="p-2 rounded-md hover:bg-white/20 transition-colors" aria-label="Close">
+                <button onClick={closeCreatePanel} className="p-2 rounded-xl hover:bg-white/20 transition-colors" aria-label="Close">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -1022,8 +1069,7 @@ export default function BankAccountsPage() {
                             setShowOwnerDropdown(true);
                           }}
                           onFocus={() => setShowOwnerDropdown(true)}
-                          className="w-full rounded-md border px-10 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                          style={{ borderColor: BORDER }}
+                          className="w-full rounded-xl border border-gray-200 px-4 py-2.5 pl-10 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                           placeholder="Search owners..."
                         />
                         {formData.owner_id && (
@@ -1045,7 +1091,7 @@ export default function BankAccountsPage() {
                             className="fixed inset-0 z-10"
                             onClick={() => setShowOwnerDropdown(false)}
                           />
-                          <div className="absolute z-20 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto" style={{ borderColor: BORDER }}>
+                          <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto">
                             {loadingOwners ? (
                               <div className="p-4 text-center text-sm text-gray-500">Loading owners...</div>
                             ) : filteredOwners.length === 0 ? (
@@ -1059,10 +1105,9 @@ export default function BankAccountsPage() {
                                     setOwnerSearchQuery(owner.name);
                                     setShowOwnerDropdown(false);
                                   }}
-                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors border-b ${
+                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors border-b border-gray-100 ${
                                     formData.owner_id === owner.id ? "bg-gray-50" : ""
                                   }`}
-                                  style={{ borderColor: BORDER }}
                                 >
                                   <div className="font-medium">{owner.name}</div>
                                   <div className="text-xs text-gray-500 mt-0.5">{owner.owner_type}</div>
@@ -1090,8 +1135,7 @@ export default function BankAccountsPage() {
                           account_number: newType !== "BANK" ? "" : formData.account_number,
                         });
                       }}
-                      className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                      style={{ borderColor: BORDER }}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                     >
                       <option value="BANK">Bank</option>
                       <option value="GCASH">GCash</option>
@@ -1116,8 +1160,7 @@ export default function BankAccountsPage() {
                               setShowBankDropdown(true);
                             }}
                             onFocus={() => setShowBankDropdown(true)}
-                            className="w-full rounded-md border px-10 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                            style={{ borderColor: BORDER }}
+                            className="w-full rounded-xl border border-gray-200 px-4 py-2.5 pl-10 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                             placeholder="Search banks..."
                           />
                           {formData.bank_id && (
@@ -1139,7 +1182,7 @@ export default function BankAccountsPage() {
                               className="fixed inset-0 z-10"
                               onClick={() => setShowBankDropdown(false)}
                             />
-                            <div className="absolute z-20 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto" style={{ borderColor: BORDER }}>
+                            <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto">
                               {loadingBanks ? (
                                 <div className="p-4 text-center text-sm text-gray-500">Loading banks...</div>
                               ) : filteredBanks.length === 0 ? (
@@ -1153,10 +1196,9 @@ export default function BankAccountsPage() {
                                       setBankSearchQuery(bank.name);
                                       setShowBankDropdown(false);
                                     }}
-                                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors border-b ${
+                                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors border-b border-gray-100 ${
                                       formData.bank_id === bank.id ? "bg-gray-50" : ""
                                     }`}
-                                    style={{ borderColor: BORDER }}
                                   >
                                     <div className="font-medium">{bank.name}</div>
                                     {bank.short_name && <div className="text-xs text-gray-500 mt-0.5">{bank.short_name}</div>}
@@ -1178,8 +1220,7 @@ export default function BankAccountsPage() {
                       type="text"
                       value={formData.account_name}
                       onChange={(e) => setFormData({ ...formData, account_name: e.target.value })}
-                      className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                      style={{ borderColor: BORDER }}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                       placeholder="e.g., SCB 483 Account"
                     />
                   </div>
@@ -1192,14 +1233,10 @@ export default function BankAccountsPage() {
                       type="text"
                       value={formData.account_number}
                       onChange={(e) => setFormData({ ...formData, account_number: e.target.value })}
-                      className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                      style={{ borderColor: BORDER }}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                       placeholder={formData.account_type === "BANK" ? "e.g., 1234567890" : "Optional"}
                       required={formData.account_type === "BANK"}
                     />
-                    {formData.account_type === "BANK" && (
-                      <p className="text-xs text-gray-500 mt-1">Stored as text to preserve leading zeros</p>
-                    )}
                   </div>
 
                   <div>
@@ -1210,8 +1247,7 @@ export default function BankAccountsPage() {
                       type="text"
                       value={formData.account_holder}
                       onChange={(e) => setFormData({ ...formData, account_holder: e.target.value })}
-                      className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                      style={{ borderColor: BORDER }}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                       placeholder="e.g., ABIC Realty & Consultancy Corp"
                     />
                   </div>
@@ -1225,11 +1261,9 @@ export default function BankAccountsPage() {
                       step="0.01"
                       value={formData.opening_balance}
                       onChange={(e) => setFormData({ ...formData, opening_balance: e.target.value })}
-                      className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                      style={{ borderColor: BORDER }}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                       placeholder="0.00"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Will be converted to opening balance voucher entry</p>
                   </div>
 
                   <div>
@@ -1240,10 +1274,8 @@ export default function BankAccountsPage() {
                       type="date"
                       value={formData.opening_date}
                       onChange={(e) => setFormData({ ...formData, opening_date: e.target.value })}
-                      className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                      style={{ borderColor: BORDER }}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Used as voucher date for opening entry</p>
                   </div>
 
                   <div>
@@ -1253,8 +1285,7 @@ export default function BankAccountsPage() {
                     <select
                       value={formData.currency}
                       onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                      className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                      style={{ borderColor: BORDER }}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                     >
                       <option value="PHP">PHP - Philippine Peso</option>
                       <option value="USD">USD - US Dollar</option>
@@ -1269,8 +1300,7 @@ export default function BankAccountsPage() {
                     <textarea
                       value={formData.notes}
                       onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                      className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                      style={{ borderColor: BORDER }}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                       placeholder="Optional description or notes"
                       rows={3}
                     />
@@ -1283,8 +1313,7 @@ export default function BankAccountsPage() {
                     <select
                       value={formData.status}
                       onChange={(e) => setFormData({ ...formData, status: e.target.value as AccountStatus })}
-                      className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                      style={{ borderColor: BORDER }}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                     >
                       <option value="ACTIVE">Active</option>
                       <option value="INACTIVE">Inactive</option>
@@ -1292,19 +1321,17 @@ export default function BankAccountsPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex-shrink-0 flex items-center justify-end gap-3 p-4 border-t" style={{ borderColor: BORDER }}>
+              <div className="flex-shrink-0 flex items-center justify-end gap-3 p-5 border-t border-gray-100">
                 <button
                   onClick={closeCreatePanel}
-                  className="px-6 py-2.5 rounded-md font-semibold border-2 hover:bg-slate-50 transition-colors"
-                  style={{ borderColor: BORDER }}
+                  className="px-6 py-2.5 rounded-xl font-semibold border border-gray-200 hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => setShowCreateAccountConfirm(true)}
                   disabled={showCreateLoading || !formData.owner_id || (formData.account_type === "BANK" && !formData.bank_id)}
-                  className="px-6 py-2.5 rounded-md font-semibold text-white hover:opacity-95 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
-                  style={{ background: "#7a0f1f" }}
+                  className="px-6 py-2.5 rounded-xl font-semibold bg-[#7B0F2B] text-white hover:bg-[#8B1535] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {showCreateLoading ? "Creating..." : "Create Bank Account"}
                 </button>
@@ -1324,7 +1351,7 @@ export default function BankAccountsPage() {
               aria-hidden="true"
             />
             <div
-              className="fixed top-0 right-0 bottom-0 w-full max-w-4xl h-screen bg-white z-50 flex flex-col rounded-md overflow-hidden shadow-xl"
+              className="fixed top-0 right-0 bottom-0 w-full max-w-4xl h-screen bg-white z-50 flex flex-col rounded-l-2xl overflow-hidden shadow-xl"
               style={{
                 animation: detailDrawerClosing
                   ? "slideOut 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards"
@@ -1332,7 +1359,7 @@ export default function BankAccountsPage() {
                 boxShadow: "-8px 0 24px rgba(0,0,0,0.15)",
               }}
             >
-              <div className="flex-shrink-0 flex items-center justify-between p-4 bg-gradient-to-r from-[#800020] via-[#A0153E] to-[#C9184A] text-white">
+              <div className="flex-shrink-0 flex items-center justify-between p-5 bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white">
                 <div className="flex items-center gap-3">
                   <div>
                     <h2 className="text-lg font-bold">{detailAccount ? detailAccount.account_name : loadingDetail ? "Loading..." : "Bank Account Details"}</h2>
@@ -1340,7 +1367,7 @@ export default function BankAccountsPage() {
                   </div>
                   {detailAccount && (
                     <div
-                      className={`px-2 py-1 rounded text-xs font-semibold ${
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold ${
                         detailAccount.status === "ACTIVE" ? "bg-green-100 text-green-700" : 
                         detailAccount.status === "INACTIVE" ? "bg-red-100 text-red-700" : 
                         "bg-gray-100 text-gray-700"
@@ -1350,7 +1377,7 @@ export default function BankAccountsPage() {
                     </div>
                   )}
                 </div>
-                <button onClick={closeDetailDrawer} className="p-2 rounded-md hover:bg-white/20 transition-colors" aria-label="Close">
+                <button onClick={closeDetailDrawer} className="p-2 rounded-xl hover:bg-white/20 transition-colors" aria-label="Close">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -1381,8 +1408,7 @@ export default function BankAccountsPage() {
                                   setShowOwnerDropdown(true);
                                 }}
                                 onFocus={() => setShowOwnerDropdown(true)}
-                                className="w-full rounded-md border px-10 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                                style={{ borderColor: BORDER }}
+                                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 pl-10 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                                 placeholder="Search owners..."
                               />
                               {detailFormData.owner_id && (
@@ -1404,7 +1430,7 @@ export default function BankAccountsPage() {
                                   className="fixed inset-0 z-10"
                                   onClick={() => setShowOwnerDropdown(false)}
                                 />
-                                <div className="absolute z-20 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto" style={{ borderColor: BORDER }}>
+                                <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto">
                                   {loadingOwners ? (
                                     <div className="p-4 text-center text-sm text-gray-500">Loading owners...</div>
                                   ) : filteredOwners.length === 0 ? (
@@ -1418,10 +1444,9 @@ export default function BankAccountsPage() {
                                           setOwnerSearchQuery(owner.name);
                                           setShowOwnerDropdown(false);
                                         }}
-                                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors border-b ${
+                                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors border-b border-gray-100 ${
                                           detailFormData.owner_id === owner.id ? "bg-gray-50" : ""
                                         }`}
-                                        style={{ borderColor: BORDER }}
                                       >
                                         <div className="font-medium">{owner.name}</div>
                                         <div className="text-xs text-gray-500 mt-0.5">{owner.owner_type}</div>
@@ -1449,8 +1474,7 @@ export default function BankAccountsPage() {
                               account_number: newType !== "BANK" ? null : detailFormData.account_number,
                             });
                           }}
-                          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                          style={{ borderColor: BORDER }}
+className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                         >
                           <option value="BANK">Bank</option>
                           <option value="GCASH">GCash</option>
@@ -1475,8 +1499,7 @@ export default function BankAccountsPage() {
                                   setShowBankDropdown(true);
                                 }}
                                 onFocus={() => setShowBankDropdown(true)}
-                                className="w-full rounded-md border px-10 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                                style={{ borderColor: BORDER }}
+                                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 pl-10 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                                 placeholder="Search banks..."
                               />
                               {detailFormData.bank_id && (
@@ -1498,7 +1521,7 @@ export default function BankAccountsPage() {
                                   className="fixed inset-0 z-10"
                                   onClick={() => setShowBankDropdown(false)}
                                 />
-                                <div className="absolute z-20 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto" style={{ borderColor: BORDER }}>
+                                <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto">
                                   {loadingBanks ? (
                                     <div className="p-4 text-center text-sm text-gray-500">Loading banks...</div>
                                   ) : filteredBanks.length === 0 ? (
@@ -1512,10 +1535,9 @@ export default function BankAccountsPage() {
                                           setBankSearchQuery(bank.name);
                                           setShowBankDropdown(false);
                                         }}
-                                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors border-b ${
+                                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors border-b border-gray-100 ${
                                           detailFormData.bank_id === bank.id ? "bg-gray-50" : ""
                                         }`}
-                                        style={{ borderColor: BORDER }}
                                       >
                                         <div className="font-medium">{bank.name}</div>
                                         {bank.short_name && <div className="text-xs text-gray-500 mt-0.5">{bank.short_name}</div>}
@@ -1537,8 +1559,7 @@ export default function BankAccountsPage() {
                           type="text"
                           value={detailFormData.account_name || ""}
                           onChange={(e) => setDetailFormData({ ...detailFormData, account_name: e.target.value })}
-                          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                          style={{ borderColor: BORDER }}
+className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                         />
                       </div>
 
@@ -1550,8 +1571,7 @@ export default function BankAccountsPage() {
                           type="text"
                           value={detailFormData.account_number || ""}
                           onChange={(e) => setDetailFormData({ ...detailFormData, account_number: e.target.value })}
-                          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                          style={{ borderColor: BORDER }}
+className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                           placeholder={detailFormData.account_type === "BANK" ? "Required" : "Optional"}
                         />
                       </div>
@@ -1564,8 +1584,7 @@ export default function BankAccountsPage() {
                           type="text"
                           value={detailFormData.account_holder || ""}
                           onChange={(e) => setDetailFormData({ ...detailFormData, account_holder: e.target.value })}
-                          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                          style={{ borderColor: BORDER }}
+className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                         />
                       </div>
 
@@ -1578,8 +1597,7 @@ export default function BankAccountsPage() {
                           step="0.01"
                           value={detailFormData.opening_balance || ""}
                           onChange={(e) => setDetailFormData({ ...detailFormData, opening_balance: parseFloat(e.target.value) || 0 })}
-                          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                          style={{ borderColor: BORDER }}
+className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                         />
                       </div>
 
@@ -1591,8 +1609,7 @@ export default function BankAccountsPage() {
                           type="date"
                           value={detailFormData.opening_date ? new Date(detailFormData.opening_date).toISOString().split("T")[0] : ""}
                           onChange={(e) => setDetailFormData({ ...detailFormData, opening_date: e.target.value })}
-                          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                          style={{ borderColor: BORDER }}
+className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                         />
                       </div>
 
@@ -1603,8 +1620,7 @@ export default function BankAccountsPage() {
                         <select
                           value={detailFormData.currency || "PHP"}
                           onChange={(e) => setDetailFormData({ ...detailFormData, currency: e.target.value })}
-                          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                          style={{ borderColor: BORDER }}
+className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                         >
                           <option value="PHP">PHP - Philippine Peso</option>
                           <option value="USD">USD - US Dollar</option>
@@ -1621,8 +1637,7 @@ export default function BankAccountsPage() {
                         <select
                           value={detailFormData.status || "ACTIVE"}
                           onChange={(e) => setDetailFormData({ ...detailFormData, status: e.target.value as AccountStatus })}
-                          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                          style={{ borderColor: BORDER }}
+className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                         >
                           <option value="ACTIVE">Active</option>
                           <option value="INACTIVE">Inactive</option>
@@ -1634,8 +1649,7 @@ export default function BankAccountsPage() {
                         <textarea
                           value={detailFormData.notes || ""}
                           onChange={(e) => setDetailFormData({ ...detailFormData, notes: e.target.value })}
-                          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                          style={{ borderColor: BORDER }}
+className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                           rows={3}
                         />
                       </div>
@@ -1644,12 +1658,11 @@ export default function BankAccountsPage() {
                 )}
               </div>
               {detailAccount && (
-                <div className="flex-shrink-0 flex items-center justify-end gap-3 p-4 border-t" style={{ borderColor: BORDER }}>
+                <div className="flex-shrink-0 flex items-center justify-end gap-3 p-5 border-t border-gray-100">
                   <button
                     onClick={() => handleSaveAccount(detailFormData)}
                     disabled={savingAccount || !detailFormData.owner_id || (detailFormData.account_type === "BANK" && !detailFormData.bank_id)}
-                    className="px-6 py-2.5 rounded-md font-semibold text-white hover:opacity-95 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
-                    style={{ background: "#7a0f1f" }}
+                    className="px-6 py-2.5 rounded-xl font-semibold bg-[#7B0F2B] text-white hover:bg-[#8B1535] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {savingAccount ? "Saving..." : "Save"}
                   </button>

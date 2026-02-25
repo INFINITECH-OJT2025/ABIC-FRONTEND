@@ -23,12 +23,9 @@ type Owner = {
   updated_at?: string;
 };
 
-const BORDER = "rgba(0,0,0,0.12)";
-
-// Format phone number
+// Format phone number - strips to digits only for storage/validation
 const formatPhoneNumber = (value: string): string => {
-  const cleaned = value.replace(/[^\d+]/g, "");
-  return cleaned;
+  return value.replace(/[^\d+]/g, "");
 };
 
 // Validate email
@@ -472,10 +469,10 @@ export default function CreateOwnerPanel({
           email: formData.email?.trim() || null,
           phone: formData.phone?.trim() || null,
           address: formData.address?.trim() || null,
-          opening_balance: formData.opening_balance && parseFloat(formData.opening_balance) > 0 
-            ? parseFloat(formData.opening_balance) 
+          opening_balance: formData.opening_balance && parseFloat(formData.opening_balance.replace(/,/g, "")) > 0 
+            ? parseFloat(formData.opening_balance.replace(/,/g, "")) 
             : null,
-          opening_date: formData.opening_balance && parseFloat(formData.opening_balance) > 0 && formData.opening_date
+          opening_date: formData.opening_balance && parseFloat(formData.opening_balance.replace(/,/g, "")) > 0 && formData.opening_date
             ? formData.opening_date
             : null,
         }),
@@ -527,17 +524,20 @@ export default function CreateOwnerPanel({
         aria-hidden="true"
       />
       <div
-        className="fixed top-0 right-0 bottom-0 w-full max-w-lg h-screen bg-white z-50 flex flex-col rounded-md overflow-hidden shadow-xl"
+        className="fixed top-0 right-0 bottom-0 w-full max-w-lg h-screen bg-white z-50 flex flex-col overflow-hidden shadow-2xl"
         style={{
           animation: panelClosing
             ? "slideOut 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards"
             : "slideIn 0.4s cubic-bezier(0.32, 0.72, 0, 1)",
-          boxShadow: "-8px 0 24px rgba(0,0,0,0.15)",
+          boxShadow: "-12px 0 40px rgba(123,15,43,0.12)",
         }}
       >
-        <div className="flex-shrink-0 flex items-center justify-between p-4 bg-gradient-to-r from-[#800020] via-[#A0153E] to-[#C9184A] text-white">
-          <h2 className="text-lg font-bold">Create Owner</h2>
-          <button onClick={closePanel} className="p-2 rounded-md hover:bg-white/20 transition-colors" aria-label="Close">
+        <div className="flex-shrink-0 flex items-center justify-between p-5 bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white">
+          <div>
+            <h2 className="text-lg font-bold">Create Owner</h2>
+            <p className="text-sm text-white/80 mt-0.5">Add a new client, company, or main owner</p>
+          </div>
+          <button onClick={closePanel} className="p-2 rounded-xl hover:bg-white/20 transition-colors" aria-label="Close">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -550,8 +550,7 @@ export default function CreateOwnerPanel({
               <select
                 value={formData.owner_type}
                 onChange={(e) => setFormData({ ...formData, owner_type: e.target.value as OwnerType })}
-                className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                style={{ borderColor: BORDER }}
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
               >
                 <option value="CLIENT">Client</option>
                 <option value="COMPANY">Company</option>
@@ -566,10 +565,9 @@ export default function CreateOwnerPanel({
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value.toUpperCase() })}
-                className={`uppercase w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20 ${
-                  nameError ? "border-red-500" : ""
+                className={`uppercase w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all ${
+                  nameError ? "border-red-500" : "border-gray-200"
                 }`}
-                style={nameError ? {} : { borderColor: BORDER }}
                 placeholder="e.g., John Doe"
                 required
               />
@@ -587,10 +585,9 @@ export default function CreateOwnerPanel({
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className={`w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20 ${
-                  descriptionError ? "border-red-500" : ""
+                className={`w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all ${
+                  descriptionError ? "border-red-500" : "border-gray-200"
                 }`}
-                style={descriptionError ? {} : { borderColor: BORDER }}
                 placeholder="Optional internal notes (e.g., Primary operational account)"
                 rows={3}
               />
@@ -608,10 +605,9 @@ export default function CreateOwnerPanel({
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className={`w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20 ${
-                  emailError ? "border-red-500" : ""
+                className={`w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all ${
+                  emailError ? "border-red-500" : "border-gray-200"
                 }`}
-                style={emailError ? {} : { borderColor: BORDER }}
                 placeholder="e.g., john@example.com"
               />
               {emailError && (
@@ -626,10 +622,9 @@ export default function CreateOwnerPanel({
                 type="text"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: formatPhoneNumber(e.target.value) })}
-                className={`w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20 ${
-                  phoneError ? "border-red-500" : ""
+                className={`w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all ${
+                  phoneError ? "border-red-500" : "border-gray-200"
                 }`}
-                style={phoneError ? {} : { borderColor: BORDER }}
                 placeholder="e.g., +63 917 123 4567"
               />
               {phoneError && (
@@ -643,10 +638,9 @@ export default function CreateOwnerPanel({
               <textarea
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                className={`w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20 ${
-                  addressError ? "border-red-500" : ""
+                className={`w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all ${
+                  addressError ? "border-red-500" : "border-gray-200"
                 }`}
-                style={addressError ? {} : { borderColor: BORDER }}
                 placeholder="Enter address"
                 rows={3}
               />
@@ -660,7 +654,7 @@ export default function CreateOwnerPanel({
               </label>
 
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
                   ₱
                 </span>
 
@@ -676,10 +670,9 @@ export default function CreateOwnerPanel({
                       setFormData({ ...formData, opening_balance: raw });
                     }
                   }}
-                  className={`w-full rounded-md border pl-8 pr-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20 ${
-                    openingBalanceError ? "border-red-500" : ""
+                  className={`w-full rounded-xl border pl-10 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all ${
+                    openingBalanceError ? "border-red-500" : "border-gray-200"
                   }`}
-                  style={openingBalanceError ? {} : { borderColor: BORDER }}
                   placeholder="0.00"
                 />
               </div>
@@ -698,10 +691,9 @@ export default function CreateOwnerPanel({
                   value={formData.opening_date}
                   onChange={(e) => setFormData({ ...formData, opening_date: e.target.value })}
                   max={new Date().toISOString().split('T')[0]}
-                  className={`w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20 ${
-                    openingDateError ? "border-red-500" : ""
+                  className={`w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all ${
+                    openingDateError ? "border-red-500" : "border-gray-200"
                   }`}
-                  style={openingDateError ? {} : { borderColor: BORDER }}
                 />
                 {openingDateError && (
                   <p className="text-xs text-red-500 mt-1">{openingDateError}</p>
@@ -710,10 +702,10 @@ export default function CreateOwnerPanel({
             )}
           </div>
         </div>
-        <div className="flex-shrink-0 flex items-center justify-end gap-3 p-4 border-t border-gray-200">
+        <div className="flex-shrink-0 flex items-center justify-end gap-3 p-5 border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
           <button
             onClick={closePanel}
-            className="px-6 py-2.5 rounded-md font-semibold border-2 border-gray-200 hover:bg-slate-50 transition-colors"
+            className="px-6 py-2.5 rounded-xl font-semibold border border-gray-200 hover:bg-gray-50 transition-colors"
           >
             Cancel
           </button>
@@ -732,7 +724,7 @@ export default function CreateOwnerPanel({
               !formData.name.trim() ||
               !formData.owner_type
             }
-            className="px-6 py-2.5 rounded-md font-semibold bg-[#7a0f1f] text-white hover:opacity-95 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
+            className="px-6 py-2.5 rounded-xl font-semibold bg-[#7B0F2B] text-white hover:bg-[#8B1535] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {showCreateLoading ? "Creating..." : "Create Owner"}
           </button>
@@ -761,7 +753,9 @@ export default function CreateOwnerPanel({
       {/* Loading Modal */}
       <LoadingModal
         isOpen={showCreateLoading}
-        message="Creating owner..." title={""}      />
+        title="Creating Owner"
+        message="Please wait while we create the owner..."
+      />
 
       {/* Fail Modal */}
       <FailModal

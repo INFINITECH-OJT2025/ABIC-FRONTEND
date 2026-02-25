@@ -1,5 +1,6 @@
 export { formatCurrency, renderParticularsWithBoldUnit, fuzzyMatch } from "./helpers";
 export { ImagePreviewPanel } from "./ImagePreviewPanel";
+export { TransactionSidePanel } from "./TransactionSidePanel";
 export { OpeningBalance, EndingBalance } from "./BalanceSummaryCards";
 export { LedgerColumnHeader, LedgerTableHeader } from "./LedgerColumnHeader";
 export { SortSelector } from "./SortSelector";

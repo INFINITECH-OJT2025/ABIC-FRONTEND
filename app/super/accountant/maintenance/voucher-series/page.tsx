@@ -268,7 +268,7 @@ export default function VoucherSeriesPage() {
 
   return (
     <div className="min-h-full flex flex-col">
-      <div className="bg-gradient-to-r from-[#7B0F2B] via-[#8B1535] to-[#A4163A] text-white px-6 py-5 flex items-center shrink-0 border-b border-[#6A0D25]/30">
+      <div className="sticky top-0 z-20 shrink-0 bg-gradient-to-r from-[#7B0F2B] via-[#8B1535] to-[#A4163A] text-white px-6 py-5 flex items-center border-b border-[#6A0D25]/30">
         <h1 className="text-lg font-semibold tracking-wide">Voucher Series</h1>
       </div>
 
@@ -444,7 +444,7 @@ export default function VoucherSeriesPage() {
               boxShadow: "-8px 0 24px rgba(0,0,0,0.15)",
             }}
           >
-            <div className="flex-shrink-0 flex items-center justify-between p-4 bg-gradient-to-r from-[#800020] via-[#A0153E] to-[#C9184A] text-white">
+            <div className="flex-shrink-0 flex items-center justify-between p-5 bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white">
               <div>
                 <h2 className="text-lg font-bold">Create Voucher Series</h2>
                 <p className="text-sm text-white/90 mt-0.5">Set up voucher numbering for transaction types.</p>
@@ -558,7 +558,7 @@ export default function VoucherSeriesPage() {
               boxShadow: "-8px 0 24px rgba(0,0,0,0.15)",
             }}
           >
-            <div className="flex-shrink-0 flex items-center justify-between p-4 bg-gradient-to-r from-[#800020] via-[#A0153E] to-[#C9184A] text-white">
+            <div className="flex-shrink-0 flex items-center justify-between p-5 bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white">
               <div>
                 <h2 className="text-lg font-bold">{editing?.transaction_type}</h2>
                 <p className="text-sm text-white/90 mt-0.5">{editing ? formatVoucherNumber(editing) : ""}</p>

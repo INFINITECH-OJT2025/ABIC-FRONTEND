@@ -28,6 +28,7 @@ import {
   UsersRound,
   Sliders,
   LogOut,
+  ScrollText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -68,6 +69,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   // Accountant - Transactions
   { href: "/super/accountant/transactions", label: "New Transaction", icon: <Plus className="w-4 h-4" />, category: "Transactions" },
   { href: "/super/accountant/saved-receipts", label: "Transactions Receipt", icon: <Receipt className="w-4 h-4" />, category: "Transactions" },
+  { href: "/super/accountant/activity-log", label: "Accountant Log", icon: <ScrollText className="w-4 h-4" />, category: "Transactions" },
 
   // Accountant - Ledger
   { href: "/super/accountant/ledger/mains", label: "Mains Ledger", icon: <BookOpen className="w-4 h-4" />, category: "Ledger" },

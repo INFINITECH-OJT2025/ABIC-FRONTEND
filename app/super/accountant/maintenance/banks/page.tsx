@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
-import { Search, Grid, List, X, Inbox, Plus, Eye, Banknote, User, ChevronDown } from "lucide-react";
+import { Search, X, Inbox, Plus, Eye, Banknote, User, Filter } from "lucide-react";
 import SuccessModal from "@/components/ui/SuccessModal";
 import LoadingModal from "@/components/ui/LoadingModal";
 import FailModal from "@/components/ui/FailModal";
@@ -40,7 +40,6 @@ type BankContact = {
   updated_at?: string;
 };
 
-const BORDER = "rgba(0,0,0,0.12)";
 
 // Country list with common countries
 const COUNTRIES = [
@@ -148,8 +147,8 @@ const Pagination = ({
   if (!paginationMeta || paginationMeta.total === 0) return null;
 
   return (
-    <div className="flex items-center justify-between py-3 border-b" style={{ borderColor: BORDER }}>
-      <div className="text-sm text-neutral-600">
+    <div className="flex items-center justify-between py-4 border-b border-gray-100">
+      <div className="text-sm text-gray-600">
         Showing {paginationMeta.from} to {paginationMeta.to} of {paginationMeta.total} {itemName}
       </div>
       {paginationMeta.last_page > 1 && (
@@ -157,8 +156,7 @@ const Pagination = ({
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={paginationMeta.current_page === 1}
-            className="px-3 py-1.5 rounded-md text-sm font-medium border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-            style={{ borderColor: BORDER }}
+            className="px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7B0F2B]/5 hover:border-[#7B0F2B]/30 transition-all"
           >
             Previous
           </button>
@@ -170,16 +168,15 @@ const Pagination = ({
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium ${
-                      paginationMeta.current_page === page ? "bg-[#7a0f1f] text-white" : "border hover:bg-gray-50"
+                    className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all ${
+                      paginationMeta.current_page === page ? "bg-[#7B0F2B] text-white" : "border border-gray-200 hover:bg-gray-50"
                     }`}
-                    style={paginationMeta.current_page !== page ? { borderColor: BORDER } : undefined}
                   >
                     {page}
                   </button>
                 );
               } else if (page === paginationMeta.current_page - 2 || page === paginationMeta.current_page + 2) {
-                return <span key={page} className="px-2 text-neutral-500">...</span>;
+                return <span key={page} className="px-2 text-gray-500">...</span>;
               }
               return null;
             })}
@@ -187,8 +184,7 @@ const Pagination = ({
           <button
             onClick={() => setCurrentPage((p) => Math.min(paginationMeta.last_page, p + 1))}
             disabled={paginationMeta.current_page === paginationMeta.last_page}
-            className="px-3 py-1.5 rounded-md text-sm font-medium border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-            style={{ borderColor: BORDER }}
+            className="px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7B0F2B]/5 hover:border-[#7B0F2B]/30 transition-all"
           >
             Next
           </button>
@@ -202,8 +198,7 @@ export default function BanksPage() {
   const [banks, setBanks] = useState<Bank[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"ACTIVE" | "INACTIVE">("ACTIVE");
-  const [viewMode, setViewMode] = useState<"cards" | "table">("table");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<"date" | "name">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -261,7 +256,7 @@ export default function BanksPage() {
 
   useEffect(() => {
     fetchBanks();
-  }, [searchQuery, statusFilter, currentPage, viewMode, sortBy, sortOrder]);
+  }, [searchQuery, statusFilter, currentPage, sortBy, sortOrder]);
 
   // Debounce bank name checking
   useEffect(() => {
@@ -292,7 +287,16 @@ export default function BanksPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [statusFilter, searchQuery, viewMode, sortBy, sortOrder]);
+  }, [statusFilter, searchQuery, sortBy, sortOrder]);
+
+  const paginatedBanks = banks;
+
+  const summaryStats = useMemo(() => {
+    const total = paginationMeta?.total || banks.length;
+    const active = banks.filter((b) => b.status === "ACTIVE").length;
+    const inactive = banks.filter((b) => b.status === "INACTIVE").length;
+    return { total, active, inactive };
+  }, [banks, paginationMeta]);
 
   const fetchBanks = async () => {
     setLoading(true);
@@ -301,10 +305,10 @@ export default function BanksPage() {
       if (searchQuery.trim()) {
         url.searchParams.append("search", searchQuery.trim());
       }
-      if (statusFilter) {
+      if (statusFilter && statusFilter !== "ALL") {
         url.searchParams.append("status", statusFilter);
       }
-      const itemsPerPage = viewMode === "table" ? 10 : 30;
+      const itemsPerPage = 30;
       url.searchParams.append("page", currentPage.toString());
       url.searchParams.append("per_page", itemsPerPage.toString());
       url.searchParams.append("sort_by", sortBy);
@@ -732,240 +736,211 @@ export default function BanksPage() {
   
 
   return (
-    <div className="min-h-full flex flex-col">
-      {/* Compact Banks bar - extension of sidebar */}
-      <div className="bg-gradient-to-r from-[#A4163A] to-[#7B0F2B] text-white px-6 py-5 flex items-center shrink-0 border-b border-[#6A0D25]/30">
-    
-        <h1 className="text-lg font-semibold tracking-wide">Banks</h1>
+    <div className="min-h-full flex flex-col bg-gray-50/80">
+      {/* Header - Hero style, sticky */}
+      <div className="sticky top-0 z-20 shrink-0 relative overflow-hidden bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white px-6 py-8">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50" />
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center border border-white/20">
+              <Banknote className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">Banks</h1>
+              <p className="text-white/80 text-sm mt-0.5">Manage bank institutions and contacts</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowCreatePanel(true)}
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold bg-white text-[#7B0F2B] hover:bg-white/95 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+          >
+            <Plus className="w-4 h-4" />
+            Create Bank
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
-        <section className="rounded-md bg-white p-5 shadow-sm border" style={{ borderColor: BORDER }}>
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-[#5f0c18]">Bank List</h2>
-              <p className="text-sm text-gray-600 mt-1">Manage bank institutions</p>
+      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-8 -mt-4">
+        <section className="rounded-2xl bg-white shadow-sm border border-gray-100 overflow-hidden">
+          {/* Summary Stats - Card row */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-6 bg-gray-50/50 border-b border-gray-100">
+            <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-[#7B0F2B]/10 flex items-center justify-center">
+                  <Banknote className="w-5 h-5 text-[#7B0F2B]" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-gray-900">{summaryStats.total}</div>
+                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Total</div>
+                </div>
+              </div>
             </div>
-            <button
-              onClick={() => setShowCreatePanel(true)}
-              className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-white hover:opacity-95"
-              style={{ background: "#7a0f1f", height: 40 }}
-            >
-              <Plus className="w-4 h-4" />
-              Create Bank
-            </button>
+            <div className="bg-white rounded-xl p-4 border border-emerald-100 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-emerald-700">{summaryStats.active}</div>
+                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Active</div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-gray-500" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-gray-700">{summaryStats.inactive}</div>
+                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Inactive</div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mt-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Status:</span>
-              <button
-                onClick={() => setStatusFilter("ACTIVE")}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  statusFilter === "ACTIVE"
-                    ? "bg-[#7a0f1f] text-white"
-                    : "bg-white border text-gray-600 hover:bg-gray-50"
-                }`}
-                style={statusFilter !== "ACTIVE" ? { borderColor: BORDER } : undefined}
-              >
-                Active
-              </button>
-              <button
-                onClick={() => setStatusFilter("INACTIVE")}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  statusFilter === "INACTIVE"
-                    ? "bg-[#7a0f1f] text-white"
-                    : "bg-white border text-gray-600 hover:bg-gray-50"
-                }`}
-                style={statusFilter !== "INACTIVE" ? { borderColor: BORDER } : undefined}
-              >
-                Inactive
-              </button>
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between p-6">
+            {/* Filters Section */}
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-[#7B0F2B]" />
+                <span className="text-sm font-semibold text-gray-700">Status</span>
+                <div className="flex gap-1.5">
+                  {(["ALL", "ACTIVE", "INACTIVE"] as const).map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setStatusFilter(s)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        statusFilter === s
+                          ? "bg-[#7B0F2B] text-white"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
+
+            {/* Search & Sort */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
               <button
                 onClick={() => fetchBanks()}
-                className="p-2 rounded-md border hover:bg-gray-50 transition-colors"
-                style={{ borderColor: BORDER }}
+                className="p-2.5 rounded-xl border border-gray-200 hover:bg-[#7B0F2B]/5 hover:border-[#7B0F2B]/30 transition-all"
                 title="Refresh"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M4 12a8 8 0 0 1 14.9-3M20 12a8 8 0 0 1-14.9 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M18 5v4h-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M6 19v-4h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M4 12a8 8 0 0 1 14.9-3M20 12a8 8 0 0 1-14.9 3" />
+                  <path d="M18 5v4h-4M6 19v-4h4" />
                 </svg>
               </button>
-              <div className="relative w-full md:w-80">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by name, short name, or country..."
-                  className="w-full rounded-md border bg-white px-10 py-2 text-sm outline-none"
-                  style={{ borderColor: BORDER, height: 40, color: "#111" }}
+                  placeholder="Search banks..."
+                  className="w-full rounded-xl border border-gray-200 pl-10 pr-10 py-2.5 h-10 text-sm focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] outline-none transition-all"
                 />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#7B0F2B]">
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
-
-              {/* Sort Dropdown */}
-              <div className="relative">
+              <div className="flex items-center gap-2">
                 <select
                   value={`${sortBy}-${sortOrder}`}
                   onChange={(e) => {
-                    const [newSortBy, newSortOrder] = e.target.value.split('-') as [typeof sortBy, typeof sortOrder];
+                    const [newSortBy, newSortOrder] = e.target.value.split("-") as [typeof sortBy, typeof sortOrder];
                     setSortBy(newSortBy);
                     setSortOrder(newSortOrder);
                   }}
-                  className="appearance-none rounded-md border bg-white px-4 py-2 pr-8 text-sm outline-none cursor-pointer hover:bg-gray-50"
-                  style={{ borderColor: BORDER, height: 40, color: "#111" }}
+                  className="rounded-xl border border-gray-200 px-4 py-2.5 h-10 text-sm focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] outline-none cursor-pointer min-w-[200px]"
                 >
-                  <option value="date-desc">Date Created (Newest First)</option>
-                  <option value="date-asc">Date Created (Oldest First)</option>
-                  <option value="name-asc">Name (A-Z)</option>
-                  <option value="name-desc">Name (Z-A)</option>
+                  <option value="date-desc">Newest first</option>
+                  <option value="date-asc">Oldest first</option>
+                  <option value="name-asc">Name A–Z</option>
+                  <option value="name-desc">Name Z–A</option>
                 </select>
-                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none" />
               </div>
             </div>
           </div>
 
-          {/* Pagination at the top */}
+          {/* Pagination */}
           {paginationMeta && (
-            <Pagination
-              paginationMeta={paginationMeta}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              itemName="banks"
-            />
+            <div className="px-6">
+              <Pagination
+                paginationMeta={paginationMeta}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                itemName="banks"
+              />
+            </div>
           )}
 
-          <div className="mt-4">
+          <div className="p-6 pt-0">
             {loading ? (
-              viewMode === "cards" ? (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" style={{ gridAutoRows: "min-content" }}>
-                  {[...Array(6)].map((_, i) => (
-                    <BankCardSkeleton key={i} />
-                  ))}
-                </div>
-              ) : (
-                <BankTableSkeleton />
-              )
-            ) : banks.length === 0 ? (
-              <div className="px-4 py-10 flex flex-col items-center justify-center text-center">
-                <Inbox className="w-16 h-16 text-gray-300 mx-auto mb-4" aria-hidden />
-                <div className="text-3xl font-bold text-[#5f0c18]">No data</div>
-                <div className="mt-2 text-xs text-neutral-800">Create a bank or adjust your search.</div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[...Array(6)].map((_, i) => (
+                  <BankCardSkeleton key={i} />
+                ))}
               </div>
-            ) : viewMode === "cards" ? (
-              <>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" style={{ gridAutoRows: "min-content" }}>
-                  {banks.map((bank) => (
-                    <div
-                      key={bank.id}
-                      className="rounded-md bg-white border shadow-sm p-4 hover:shadow-md transition-shadow"
-                      style={{ borderColor: BORDER }}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-[#7a0f1f]/10 rounded-md flex items-center justify-center">
-                            <Banknote className="w-5 h-5 text-[#7a0f1f]" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-neutral-900">{bank.name}</h3>
-                            {bank.short_name && <p className="text-sm text-neutral-600 mt-0.5">{bank.short_name}</p>}
-                            {bank.country && <p className="text-xs text-neutral-500 mt-0.5">{bank.country}</p>}
-                          </div>
-                        </div>
-                        <div
-                          className={`px-2 py-1 text-[11px] font-semibold rounded ${
-                            bank.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"
-                          }`}
-                        >
-                          {bank.status}
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="text-[11px] text-neutral-500">Created: {formatDate(bank.created_at)}</div>
-                        <button
-                          onClick={() => openDetailDrawer(bank.id)}
-                          className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold text-white hover:opacity-95"
-                          style={{ background: "#7a0f1f", height: 32 }}
-                          title="View"
-                        >
-                          <EyeIcon />
-                          View
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+            ) : paginatedBanks.length === 0 ? (
+              <div className="px-4 py-16 flex flex-col items-center justify-center text-center rounded-2xl bg-gray-50/80 border-2 border-dashed border-gray-200">
+                <div className="w-16 h-16 rounded-2xl bg-[#7B0F2B]/10 flex items-center justify-center mb-4">
+                  <Inbox className="w-8 h-8 text-[#7B0F2B]" />
                 </div>
-              </>
+                <h3 className="text-lg font-semibold text-gray-900">No banks found</h3>
+                <p className="text-sm text-gray-500 mt-1 mb-6 max-w-sm">Create a bank or adjust your filters.</p>
+                <button
+                  onClick={() => setShowCreatePanel(true)}
+                  className="px-5 py-2.5 bg-[#7B0F2B] text-white rounded-xl font-semibold hover:bg-[#8B1535] transition-colors inline-flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create Bank
+                </button>
+              </div>
             ) : (
-              <div>
-                <div className="rounded-md border bg-neutral-50 px-4 py-0 mb-3" style={{ borderColor: BORDER }}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4 flex-1 min-w-0">
-                      <div className="w-12 h-12 shrink-0"></div>
-                      <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-3 gap-2 text-sm font-bold text-neutral-900">
-                        <div>Name</div>
-                        <div>Short Name</div>
-                        <div>Country</div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {paginatedBanks.map((bank) => (
+                  <div
+                    key={bank.id}
+                    className="rounded-2xl border border-gray-100 bg-white p-5 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="w-12 h-12 rounded-xl bg-[#7B0F2B]/10 flex items-center justify-center shrink-0">
+                          <Banknote className="w-6 h-6 text-[#7B0F2B]" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 truncate">{bank.name}</h3>
+                          {bank.short_name && <p className="text-sm text-gray-600 mt-0.5 truncate">{bank.short_name}</p>}
+                          {bank.country && <p className="text-xs text-gray-500 mt-0.5 truncate">{bank.country}</p>}
+                        </div>
+                      </div>
+                      <div
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold shrink-0 ${
+                          bank.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {bank.status}
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <div className="text-sm font-bold text-neutral-900 w-20">Status</div>
-                      <div className="w-20"></div>
+                    <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+                      <div className="text-xs text-gray-500">Created: {formatDate(bank.created_at)}</div>
+                      <button
+                        onClick={() => openDetailDrawer(bank.id)}
+                        className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold bg-[#7B0F2B] text-white hover:bg-[#8B1535] transition-colors"
+                        title="View"
+                      >
+                        <EyeIcon />
+                        View
+                      </button>
                     </div>
                   </div>
-                </div>
-                <div className="space-y-3">
-                  {banks.map((bank) => (
-                    <div
-                      key={bank.id}
-                      className="rounded-md bg-white border shadow-sm p-4 hover:shadow-md transition-shadow"
-                      style={{ borderColor: BORDER }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4 flex-1 min-w-0">
-                          <div className="w-12 h-12 rounded-md bg-[#7a0f1f]/10 flex items-center justify-center shrink-0">
-                            <Banknote className="w-6 h-6 text-[#7a0f1f]" />
-                          </div>
-                          <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-3 gap-2">
-                            <div className="min-w-0">
-                              <div className="font-semibold text-neutral-900 truncate">{bank.name}</div>
-                              <div className="text-xs text-neutral-500 mt-0.5">Name</div>
-                            </div>
-                            <div className="min-w-0">
-                              <div className="text-sm text-neutral-900 truncate">{bank.short_name || "—"}</div>
-                              <div className="text-xs text-neutral-500 mt-0.5">Short Name</div>
-                            </div>
-                            <div className="min-w-0">
-                              <div className="text-sm text-neutral-900 truncate">{bank.country || "—"}</div>
-                              <div className="text-xs text-neutral-500 mt-0.5">Country</div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3 shrink-0">
-                          <div
-                            className={`px-3 py-1.5 rounded-md text-xs font-semibold ${
-                              bank.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"
-                            }`}
-                          >
-                            {bank.status}
-                          </div>
-                          <button
-                            onClick={() => openDetailDrawer(bank.id)}
-                            className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold text-white hover:opacity-95"
-                            style={{ background: "#7a0f1f", height: 32 }}
-                            title="View"
-                          >
-                            <EyeIcon />
-                            View
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                ))}
               </div>
             )}
           </div>
@@ -982,7 +957,7 @@ export default function BanksPage() {
               aria-hidden="true"
             />
             <div
-              className="fixed top-0 right-0 bottom-0 w-full max-w-md h-screen bg-white z-50 flex flex-col rounded-md overflow-hidden shadow-xl"
+              className="fixed top-0 right-0 bottom-0 w-full max-w-md h-screen bg-white z-50 flex flex-col rounded-l-2xl overflow-hidden shadow-xl"
               style={{
                 animation: createPanelClosing
                   ? "slideOut 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards"
@@ -990,9 +965,9 @@ export default function BanksPage() {
                 boxShadow: "-8px 0 24px rgba(0,0,0,0.15)",
               }}
             >
-              <div className="flex-shrink-0 flex items-center justify-between p-4 bg-gradient-to-r from-[#800020] via-[#A0153E] to-[#C9184A] text-white">
+              <div className="flex-shrink-0 flex items-center justify-between p-4 bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white">
                 <h2 className="text-lg font-bold">Create Bank</h2>
-                <button onClick={closeCreatePanel} className="p-2 rounded-md hover:bg-white/20 transition-colors" aria-label="Close">
+                <button onClick={closeCreatePanel} className="p-2 rounded-xl hover:bg-white/20 transition-colors" aria-label="Close">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -1006,10 +981,9 @@ export default function BanksPage() {
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className={`w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20 ${
-                        nameError ? "border-red-500" : ""
+                      className={`w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all ${
+                        nameError ? "border-red-500" : "border-gray-200"
                       }`}
-                      style={nameError ? {} : { borderColor: BORDER }}
                       placeholder="e.g., Security Bank"
                       required
                     />
@@ -1026,8 +1000,7 @@ export default function BanksPage() {
                       type="text"
                       value={formData.short_name}
                       onChange={(e) => setFormData({ ...formData, short_name: e.target.value })}
-                      className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                      style={{ borderColor: BORDER }}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                       placeholder="e.g., SCB"
                     />
                   </div>
@@ -1036,8 +1009,7 @@ export default function BanksPage() {
                     <select
                       value={formData.country}
                       onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                      className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                      style={{ borderColor: BORDER }}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                     >
                       <option value="">Select a country</option>
                       {COUNTRIES.map((country) => (
@@ -1054,8 +1026,7 @@ export default function BanksPage() {
                     <select
                       value={formData.status}
                       onChange={(e) => setFormData({ ...formData, status: e.target.value as BankStatus })}
-                      className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                      style={{ borderColor: BORDER }}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                     >
                       <option value="ACTIVE">Active</option>
                       <option value="INACTIVE">Inactive</option>
@@ -1063,19 +1034,17 @@ export default function BanksPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex-shrink-0 flex items-center justify-end gap-3 p-4 border-t" style={{ borderColor: BORDER }}>
+              <div className="flex-shrink-0 flex items-center justify-end gap-3 p-4 border-t border-gray-100">
                 <button
                   onClick={closeCreatePanel}
-                  className="px-6 py-2.5 rounded-md font-semibold border-2 hover:bg-slate-50 transition-colors"
-                  style={{ borderColor: BORDER }}
+                  className="px-6 py-2.5 rounded-xl font-semibold border border-gray-200 hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => setShowCreateBankConfirm(true)}
                   disabled={showCreateLoading || !!nameError}
-                  className="px-6 py-2.5 rounded-md font-semibold text-white hover:opacity-95 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
-                  style={{ background: "#7a0f1f" }}
+                  className="px-6 py-2.5 rounded-xl font-semibold bg-[#7B0F2B] text-white hover:bg-[#8B1535] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {showCreateLoading ? "Creating..." : "Create Bank"}
                 </button>
@@ -1095,7 +1064,7 @@ export default function BanksPage() {
               aria-hidden="true"
             />
             <div
-              className="fixed top-0 right-0 bottom-0 w-full max-w-4xl h-screen bg-white z-50 flex flex-col rounded-md overflow-hidden shadow-xl"
+              className="fixed top-0 right-0 bottom-0 w-full max-w-4xl h-screen bg-white z-50 flex flex-col rounded-l-2xl overflow-hidden shadow-xl"
               style={{
                 animation: detailDrawerClosing
                   ? "slideOut 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards"
@@ -1103,7 +1072,7 @@ export default function BanksPage() {
                 boxShadow: "-8px 0 24px rgba(0,0,0,0.15)",
               }}
             >
-              <div className="flex-shrink-0 flex items-center justify-between p-4 bg-gradient-to-r from-[#800020] via-[#A0153E] to-[#C9184A] text-white">
+              <div className="flex-shrink-0 flex items-center justify-between p-4 bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white">
                 <div className="flex items-center gap-3">
                   <div>
                     <h2 className="text-lg font-bold">{detailBank ? detailBank.name : loadingDetail ? "Loading..." : "Bank Details"}</h2>
@@ -1111,7 +1080,7 @@ export default function BanksPage() {
                   </div>
                   {detailBank && (
                     <div
-                      className={`px-2 py-1 rounded text-xs font-semibold ${
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold ${
                         detailBank.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"
                       }`}
                     >
@@ -1119,7 +1088,7 @@ export default function BanksPage() {
                     </div>
                   )}
                 </div>
-                <button onClick={closeDetailDrawer} className="p-2 rounded-md hover:bg-white/20 transition-colors" aria-label="Close">
+                <button onClick={closeDetailDrawer} className="p-2 rounded-xl hover:bg-white/20 transition-colors" aria-label="Close">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -1144,10 +1113,9 @@ export default function BanksPage() {
                             type="text"
                             value={detailFormData.name || ""}
                             onChange={(e) => setDetailFormData({ ...detailFormData, name: e.target.value })}
-                            className={`w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20 ${
-                              nameError ? "border-red-500" : ""
+                            className={`w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all ${
+                              nameError ? "border-red-500" : "border-gray-200"
                             }`}
-                            style={nameError ? {} : { borderColor: BORDER }}
                           />
                           {checkingName && (
                             <p className="text-xs text-gray-500 mt-1">Checking availability...</p>
@@ -1163,8 +1131,7 @@ export default function BanksPage() {
                           type="text"
                           value={detailFormData.short_name || ""}
                           onChange={(e) => setDetailFormData({ ...detailFormData, short_name: e.target.value })}
-                          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                          style={{ borderColor: BORDER }}
+                          className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                         />
                       </div>
                       <div>
@@ -1172,8 +1139,7 @@ export default function BanksPage() {
                         <select
                           value={detailFormData.country || ""}
                           onChange={(e) => setDetailFormData({ ...detailFormData, country: e.target.value })}
-                          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                          style={{ borderColor: BORDER }}
+                          className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                         >
                           <option value="">Select a country</option>
                           {COUNTRIES.map((country) => (
@@ -1190,8 +1156,7 @@ export default function BanksPage() {
                         <select
                           value={detailFormData.status || "ACTIVE"}
                           onChange={(e) => setDetailFormData({ ...detailFormData, status: e.target.value as BankStatus })}
-                          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                          style={{ borderColor: BORDER }}
+                          className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                         >
                           <option value="ACTIVE">Active</option>
                           <option value="INACTIVE">Inactive</option>
@@ -1200,7 +1165,7 @@ export default function BanksPage() {
                     </div>
 
                     {/* Bank Contacts Section */}
-                    <div className="mt-8 pt-8 border-t" style={{ borderColor: BORDER }}>
+                    <div className="mt-8 pt-8 border-t border-gray-100">
                         <div className="flex items-center justify-between mb-4">
                           <div>
                             <h3 className="text-base font-semibold text-neutral-900">Bank Contacts</h3>
@@ -1208,8 +1173,7 @@ export default function BanksPage() {
                           </div>
                           <button
                             onClick={() => openContactForm()}
-                            className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium text-white hover:opacity-95"
-                            style={{ background: "#7a0f1f" }}
+                            className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold bg-[#7B0F2B] text-white hover:bg-[#8B1535] transition-colors"
                           >
                             <Plus className="w-4 h-4" />
                             Add Contact
@@ -1227,7 +1191,7 @@ export default function BanksPage() {
                           </div>
                         ) : (
                           <div>
-                            <div className="rounded-md border bg-neutral-50 px-4 py-0 mb-3" style={{ borderColor: BORDER }}>
+                            <div className="rounded-xl border border-gray-100 bg-gray-50/50 px-4 py-0 mb-3">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4 flex-1 min-w-0">
                                   <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-2 gap-2 py-2 text-sm font-bold text-neutral-900">
@@ -1249,8 +1213,7 @@ export default function BanksPage() {
                                 return (
                                   <div
                                     key={contact.id}
-                                    className="rounded-md bg-white border shadow-sm p-4 hover:shadow-md transition-shadow"
-                                    style={{ borderColor: BORDER }}
+                                    className="rounded-xl bg-white border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow"
                                   >
                                     <div className="flex items-center justify-between">
                                       <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -1312,7 +1275,7 @@ export default function BanksPage() {
                                         <div className="flex items-center gap-2">
                                           <button
                                             onClick={() => openContactForm(contact)}
-                                            className="p-1.5 rounded-md hover:bg-gray-100 transition-colors"
+                                            className="p-1.5 rounded-xl hover:bg-gray-100 transition-colors"
                                             title="View contact"
                                           >
                                             <Eye className="w-4 h-4 text-gray-600" />
@@ -1331,12 +1294,11 @@ export default function BanksPage() {
                 )}
               </div>
               {detailBank && (
-                <div className="flex-shrink-0 flex items-center justify-end gap-3 p-4 border-t" style={{ borderColor: BORDER }}>
+                <div className="flex-shrink-0 flex items-center justify-end gap-3 p-4 border-t border-gray-100">
                   <button
                     onClick={() => handleSaveBank(detailFormData)}
                     disabled={savingBank || !!nameError}
-                    className="px-6 py-2.5 rounded-md font-semibold text-white hover:opacity-95 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
-                    style={{ background: "#7a0f1f" }}
+                    className="px-6 py-2.5 rounded-xl font-semibold bg-[#7B0F2B] text-white hover:bg-[#8B1535] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {savingBank ? "Saving..." : "Save"}
                   </button>
@@ -1440,13 +1402,13 @@ export default function BanksPage() {
               aria-hidden="true"
             />
             <div
-              className="fixed top-0 right-0 bottom-0 w-full max-w-2xl h-screen bg-white z-50 flex flex-col rounded-md overflow-hidden shadow-xl"
+              className="fixed top-0 right-0 bottom-0 w-full max-w-2xl h-screen bg-white z-50 flex flex-col rounded-l-2xl overflow-hidden shadow-xl"
               style={{
                 animation: "slideIn 0.4s cubic-bezier(0.32, 0.72, 0, 1)",
                 boxShadow: "-8px 0 24px rgba(0,0,0,0.15)",
               }}
             >
-              <div className="flex-shrink-0 flex items-center justify-between p-4 bg-gradient-to-r from-[#800020] via-[#A0153E] to-[#C9184A] text-white">
+              <div className="flex-shrink-0 flex items-center justify-between p-5 bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white">
                 <div>
                   <h2 className="text-lg font-bold">{editingContact ? "Edit Contact" : "Add New Contact"}</h2>
                   <p className="text-sm text-white/90 mt-0.5">
@@ -1455,7 +1417,7 @@ export default function BanksPage() {
                 </div>
                 <button
                   onClick={closeContactForm}
-                  className="p-2 rounded-md hover:bg-white/20 transition-colors"
+                  className="p-2 rounded-xl hover:bg-white/20 transition-colors"
                   aria-label="Close"
                 >
                   <X className="w-5 h-5" />
@@ -1471,8 +1433,7 @@ export default function BanksPage() {
                       type="text"
                       value={contactFormData.branch_name}
                       onChange={(e) => setContactFormData({ ...contactFormData, branch_name: e.target.value })}
-                      className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                      style={{ borderColor: BORDER }}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                       placeholder="Enter branch name"
                     />
                   </div>
@@ -1482,8 +1443,7 @@ export default function BanksPage() {
                       type="text"
                       value={contactFormData.contact_person}
                       onChange={(e) => setContactFormData({ ...contactFormData, contact_person: e.target.value })}
-                      className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                      style={{ borderColor: BORDER }}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                       placeholder="Enter contact person name"
                     />
                   </div>
@@ -1493,8 +1453,7 @@ export default function BanksPage() {
                       type="text"
                       value={contactFormData.position}
                       onChange={(e) => setContactFormData({ ...contactFormData, position: e.target.value })}
-                      className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                      style={{ borderColor: BORDER }}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                       placeholder="Enter position"
                     />
                   </div>
@@ -1503,8 +1462,7 @@ export default function BanksPage() {
                     <textarea
                       value={contactFormData.notes}
                       onChange={(e) => setContactFormData({ ...contactFormData, notes: e.target.value })}
-                      className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                      style={{ borderColor: BORDER }}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                       placeholder="Enter notes"
                       rows={3}
                     />
@@ -1515,8 +1473,7 @@ export default function BanksPage() {
                       <button
                         type="button"
                         onClick={addChannel}
-                        className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-white hover:opacity-95"
-                        style={{ background: "#7a0f1f" }}
+                        className="inline-flex items-center gap-1 rounded-xl px-3 py-2 text-xs font-semibold bg-[#7B0F2B] text-white hover:bg-[#8B1535] transition-colors"
                       >
                         <Plus className="w-3 h-3" />
                         Add Channel
@@ -1530,7 +1487,7 @@ export default function BanksPage() {
                         const hasEmailError = isEmailType && channelValue && !isValidEmail(channelValue);
                         
                         return (
-                          <div key={index} className="flex gap-2 items-start p-3 rounded-md border" style={{ borderColor: BORDER }}>
+                          <div key={index} className="flex gap-2 items-start p-3 rounded-xl border border-gray-100">
                             <div className="flex-1 space-y-2">
                               <div className="grid grid-cols-2 gap-2">
                                 <select
@@ -1539,8 +1496,7 @@ export default function BanksPage() {
                                     const newType = e.target.value as "PHONE" | "MOBILE" | "EMAIL" | "VIBER";
                                     updateChannel(index, "channel_type", newType);
                                   }}
-                                  className="rounded-md border px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                                  style={{ borderColor: BORDER }}
+                                  className="rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                                 >
                                   <option value="PHONE">Phone</option>
                                   <option value="MOBILE">Mobile</option>
@@ -1551,8 +1507,7 @@ export default function BanksPage() {
                                   type="text"
                                   value={channel.label || ""}
                                   onChange={(e) => updateChannel(index, "label", e.target.value)}
-                                  className="rounded-md border px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                                  style={{ borderColor: BORDER }}
+                                  className="rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                                   placeholder="Label (optional)"
                                 />
                               </div>
@@ -1561,8 +1516,7 @@ export default function BanksPage() {
                                   <select
                                     value={channel.country_code || "+63"}
                                     onChange={(e) => updateChannel(index, "country_code", e.target.value)}
-                                    className="rounded-md border px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20 w-32"
-                                    style={{ borderColor: BORDER }}
+                                    className="rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all w-32"
                                   >
                                     {COUNTRY_PHONE_CODES.map((code) => (
                                       <option key={code.code} value={code.code}>
@@ -1582,10 +1536,9 @@ export default function BanksPage() {
                                       }
                                       updateChannel(index, "value", value);
                                     }}
-                                    className={`rounded-md border px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20 w-full ${
-                                      hasEmailError ? "border-red-500" : ""
+                                    className={`rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all w-full ${
+                                      hasEmailError ? "border-red-500" : "border-gray-200"
                                     }`}
-                                    style={hasEmailError ? {} : { borderColor: BORDER }}
                                     placeholder={isEmailType ? "email@example.com" : "Number"}
                                   />
                                   {hasEmailError && (
@@ -1597,7 +1550,7 @@ export default function BanksPage() {
                             <button
                               type="button"
                               onClick={() => removeChannel(index)}
-                              className="p-1.5 rounded-md hover:bg-red-50 transition-colors shrink-0"
+                              className="p-1.5 rounded-xl hover:bg-red-50 transition-colors shrink-0"
                               title="Remove channel"
                             >
                               <X className="w-4 h-4 text-red-600" />
@@ -1606,7 +1559,7 @@ export default function BanksPage() {
                         );
                       })}
                       {contactFormData.channels.length === 0 && (
-                        <div className="text-center py-4 text-sm text-gray-500 border rounded-md" style={{ borderColor: BORDER }}>
+                        <div className="text-center py-4 text-sm text-gray-500 border border-gray-100 rounded-xl">
                           No channels added. Click "Add Channel" to add contact information.
                         </div>
                       )}
@@ -1614,11 +1567,10 @@ export default function BanksPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex-shrink-0 flex items-center justify-end gap-3 p-4 border-t" style={{ borderColor: BORDER }}>
+              <div className="flex-shrink-0 flex items-center justify-end gap-3 p-4 border-t border-gray-100">
                 <button
                   onClick={closeContactForm}
-                  className="px-6 py-2.5 rounded-md font-semibold border-2 hover:bg-slate-50 transition-colors"
-                  style={{ borderColor: BORDER }}
+                  className="px-6 py-2.5 rounded-xl font-semibold border border-gray-200 hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
@@ -1631,8 +1583,7 @@ export default function BanksPage() {
                     }
                   }}
                   disabled={savingContact || !contactFormData.branch_name.trim()}
-                  className="px-6 py-2.5 rounded-md font-semibold text-white hover:opacity-95 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
-                  style={{ background: "#7a0f1f" }}
+                  className="px-6 py-2.5 rounded-xl font-semibold bg-[#7B0F2B] text-white hover:bg-[#8B1535] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {savingContact ? "Saving..." : editingContact ? "Update" : "Create"}
                 </button>
@@ -1679,72 +1630,20 @@ function BankDetailSkeleton() {
 
 function BankCardSkeleton() {
   return (
-    <div className="rounded-md bg-white border shadow-sm p-4" style={{ borderColor: BORDER }}>
-      <div className="flex items-start justify-between mb-3">
+    <div className="rounded-2xl border border-gray-100 bg-white p-5 animate-pulse">
+      <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 flex-1">
-          <div className="w-10 h-10 bg-gray-200 rounded-md animate-pulse" />
-          <div className="flex-1">
-            <div className="h-4 bg-gray-200 w-3/4 mb-2 animate-pulse rounded" />
-            <div className="h-3 bg-gray-200 w-1/2 animate-pulse rounded" />
+          <div className="w-12 h-12 bg-gray-200 rounded-xl" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 bg-gray-200 rounded w-3/4" />
+            <div className="h-3 bg-gray-200 rounded w-1/3" />
           </div>
         </div>
-        <div className="h-5 bg-gray-200 w-16 animate-pulse rounded" />
+        <div className="h-6 bg-gray-200 rounded-lg w-16" />
       </div>
-      <div className="flex items-center justify-between">
-        <div className="h-3 bg-gray-200 w-24 animate-pulse rounded" />
-        <div className="h-8 bg-gray-200 w-20 animate-pulse rounded-md" />
-      </div>
-    </div>
-  );
-}
-
-function BankTableSkeleton() {
-  return (
-    <div>
-      <div className="rounded-md border bg-neutral-50 px-4 py-0 mb-3" style={{ borderColor: BORDER }}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4 flex-1 min-w-0">
-            <div className="w-12 h-12 shrink-0"></div>
-            <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-3 gap-2">
-              <div className="h-4 bg-gray-200 w-20 animate-pulse rounded" />
-              <div className="h-4 bg-gray-200 w-24 animate-pulse rounded" />
-              <div className="h-4 bg-gray-200 w-20 animate-pulse rounded" />
-            </div>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="h-4 bg-gray-200 w-16 animate-pulse rounded" />
-            <div className="w-20"></div>
-          </div>
-        </div>
-      </div>
-      <div className="space-y-3">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="rounded-md bg-white border shadow-sm p-4" style={{ borderColor: BORDER }}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4 flex-1 min-w-0">
-                <div className="w-12 h-12 bg-gray-200 rounded-md animate-pulse" />
-                <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <div>
-                    <div className="h-4 bg-gray-200 w-3/4 mb-1 animate-pulse rounded" />
-                    <div className="h-3 bg-gray-200 w-16 animate-pulse rounded" />
-                  </div>
-                  <div>
-                    <div className="h-4 bg-gray-200 w-1/2 mb-1 animate-pulse rounded" />
-                    <div className="h-3 bg-gray-200 w-20 animate-pulse rounded" />
-                  </div>
-                  <div>
-                    <div className="h-4 bg-gray-200 w-1/2 mb-1 animate-pulse rounded" />
-                    <div className="h-3 bg-gray-200 w-16 animate-pulse rounded" />
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 shrink-0">
-                <div className="h-8 bg-gray-200 w-20 animate-pulse rounded-md" />
-                <div className="h-8 bg-gray-200 w-20 animate-pulse rounded-md" />
-              </div>
-            </div>
-          </div>
-        ))}
+      <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+        <div className="h-3 bg-gray-200 rounded w-24" />
+        <div className="h-9 bg-gray-200 rounded-xl w-20" />
       </div>
     </div>
   );

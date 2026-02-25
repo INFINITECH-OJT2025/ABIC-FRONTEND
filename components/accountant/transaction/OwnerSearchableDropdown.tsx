@@ -23,6 +23,9 @@ interface OwnerSearchableDropdownProps {
   onCreateOwner?: (name: string) => void;
   emptyMessage?: string;
   noResultsMessage?: string;
+  required?: boolean;
+  /** When "above", dropdown opens upward to avoid being clipped by containers below */
+  dropdownPosition?: "below" | "above";
 }
 
 export default function OwnerSearchableDropdown({
@@ -42,6 +45,8 @@ export default function OwnerSearchableDropdown({
   onCreateOwner,
   emptyMessage = "No owners found",
   noResultsMessage = "No owners found",
+  required = true,
+  dropdownPosition = "below",
 }: OwnerSearchableDropdownProps) {
   const selectedOwner = useMemo(() => {
     return owners.find((o) => o.id === value) || null;
@@ -57,7 +62,7 @@ export default function OwnerSearchableDropdown({
   return (
     <div className="relative" data-field-error={error ? true : undefined}>
       <label className="block text-sm font-medium mb-2 text-gray-900">
-        {label} <span className="text-red-500">*</span>
+        {label} {required && <span className="text-red-500">*</span>}
       </label>
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none" />
@@ -70,10 +75,10 @@ export default function OwnerSearchableDropdown({
             onShowDropdown(true);
           }}
           onFocus={() => onShowDropdown(true)}
-          className={`w-full rounded-md border px-10 py-2 h-10 text-sm text-gray-900 outline-none focus:ring-2 disabled:opacity-60 transition-all ${
+          className={`w-full rounded-xl border px-10 py-2.5 h-10 text-sm text-gray-900 outline-none focus:ring-2 disabled:opacity-60 transition-all ${
             error
               ? "border-red-500 bg-red-50 focus:ring-red-500/20 focus:border-red-500"
-              : "border-gray-200 bg-white focus:ring-[#7a0f1f]/20 focus:border-[#7a0f1f]"
+              : "border-gray-200 bg-white focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B]"
           }`}
         />
         {value && (
@@ -93,7 +98,7 @@ export default function OwnerSearchableDropdown({
               className="fixed inset-0 z-10"
               onClick={() => onShowDropdown(false)}
             />
-            <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+            <div className={`absolute z-20 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto ${dropdownPosition === "above" ? "bottom-full mb-1" : "mt-1"}`}>
               {loading ? (
                 <div className="p-4 text-center text-sm text-gray-500">Loading owners...</div>
               ) : filteredOwners.length === 0 ? (
@@ -107,8 +112,7 @@ export default function OwnerSearchableDropdown({
                         onCreateOwner(searchQuery.trim());
                         onShowDropdown(false);
                       }}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-md hover:opacity-95 transition-opacity"
-                      style={{ backgroundColor: "#7a0f1f" }}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-xl bg-[#7B0F2B] hover:bg-[#8B1535] transition-colors"
                     >
                       <Plus className="w-4 h-4" />
                       Create "{searchQuery.trim()}"
@@ -146,7 +150,7 @@ export default function OwnerSearchableDropdown({
                           onCreateOwner(searchQuery.trim());
                           onShowDropdown(false);
                         }}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-[#7a0f1f] hover:bg-[#7a0f1f]/10 transition-colors"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-[#7B0F2B] hover:bg-[#7B0F2B]/10 transition-colors"
                       >
                         <Plus className="w-4 h-4" />
                         Create "{searchQuery.trim()}"

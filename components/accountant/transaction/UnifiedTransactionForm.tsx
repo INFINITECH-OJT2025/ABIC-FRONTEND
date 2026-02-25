@@ -39,9 +39,17 @@ type TransactionMode = "DEPOSIT" | "WITHDRAWAL";
 
 interface UnifiedTransactionFormProps {
   initialMode?: TransactionMode;
+  prefillFromOwnerId?: number | null;
+  prefillToOwnerId?: number | null;
+  onTransactionSuccess?: () => void;
 }
 
-export default function UnifiedTransactionForm({ initialMode = "DEPOSIT" }: UnifiedTransactionFormProps) {
+export default function UnifiedTransactionForm({
+  initialMode = "DEPOSIT",
+  prefillFromOwnerId,
+  prefillToOwnerId,
+  onTransactionSuccess,
+}: UnifiedTransactionFormProps) {
   const searchParams = useSearchParams();
   const modeParam = searchParams.get("mode");
   const [mode, setMode] = useState<TransactionMode>(
@@ -326,6 +334,27 @@ export default function UnifiedTransactionForm({ initialMode = "DEPOSIT" }: Unif
       setFormData({ ...formData, unit_name: "" });
     }
   }, [formData.unit_id, units]);
+
+  /* ================= PREFILL (from ledger context) ================= */
+  useEffect(() => {
+    if (prefillFromOwnerId && fromOwners.length > 0) {
+      const owner = fromOwners.find((o) => o.id === prefillFromOwnerId);
+      if (owner) {
+        setFormData((prev) => ({ ...prev, from_owner_id: prefillFromOwnerId }));
+        setFromOwnerSearchQuery(owner.name);
+      }
+    }
+  }, [prefillFromOwnerId, fromOwners]);
+
+  useEffect(() => {
+    if (prefillToOwnerId && toOwners.length > 0) {
+      const owner = toOwners.find((o) => o.id === prefillToOwnerId);
+      if (owner) {
+        setFormData((prev) => ({ ...prev, to_owner_id: prefillToOwnerId }));
+        setToOwnerSearchQuery(owner.name);
+      }
+    }
+  }, [prefillToOwnerId, toOwners]);
 
   /* ================= CONDITIONS ================= */
 
@@ -796,6 +825,7 @@ export default function UnifiedTransactionForm({ initialMode = "DEPOSIT" }: Unif
         // Hide loading and show success immediately (don't wait for image saving)
         setShowCreateTransactionLoading(false);
         setShowCreateTransactionSuccess(true);
+        onTransactionSuccess?.();
 
         toast.success("Transaction created successfully", {
           description: `Voucher ${formData.voucher_no || "—"} • ${formatAmount(formData.amount)}`,
@@ -1043,7 +1073,7 @@ export default function UnifiedTransactionForm({ initialMode = "DEPOSIT" }: Unif
   return (
     <>
       <form onSubmit={handleSubmit} className="h-full flex flex-col relative">
-        <div className="flex-1 overflow-y-auto min-h-0 pb-20">
+        <div className="flex-1 overflow-y-auto min-h-0 px-4 sm:px-6 lg:px-8 pb-20">
           <div className="px-4 sm:px-6 py-4 sm:py-6">
             <div className="grid lg:grid-cols-3 gap-4 lg:gap-6 max-w-[1920px] mx-auto">
               {/* LEFT SIDE - Form Fields */}
@@ -1698,8 +1728,8 @@ export default function UnifiedTransactionForm({ initialMode = "DEPOSIT" }: Unif
         </div>
         
         {/* Sticky Footer - Action Buttons */}
-        <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg z-30 px-4 sm:px-6 py-3 sm:py-4">
-          <div className="max-w-[1920px] mx-auto flex justify-end gap-3 relative z-30">
+        <div className="sticky bottom-0 bg-white border-t shadow-lg z-30 py-3 sm:py-4">
+          <div className="px-4 sm:px-6 lg:px-8 max-w-[1920px] mx-auto flex justify-end gap-3">
             <button
               type="button"
               onClick={(e) => {
@@ -1832,8 +1862,8 @@ export default function UnifiedTransactionForm({ initialMode = "DEPOSIT" }: Unif
       {/* Create Unit Panel - Simplified inline version */}
       {showCreateUnitPanel && (
         <div className="fixed inset-0 bg-black/50 z-40 flex items-center justify-end">
-          <div className="w-full max-w-md h-screen bg-white flex flex-col shadow-xl">
-            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-[#800020] via-[#A0153E] to-[#C9184A] text-white">
+          <div className="w-full max-w-md h-screen bg-white flex flex-col rounded-l-2xl overflow-hidden shadow-xl">
+            <div className="flex items-center justify-between p-5 bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white">
               <h2 className="text-lg font-bold">Create Unit</h2>
               <button
                 onClick={() => {
@@ -1846,7 +1876,7 @@ export default function UnifiedTransactionForm({ initialMode = "DEPOSIT" }: Unif
                   });
                   setPropertySearchQuery("");
                 }}
-                className="p-2 rounded-md hover:bg-white/20 transition-colors"
+                className="p-2 rounded-xl hover:bg-white/20 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1861,8 +1891,7 @@ export default function UnifiedTransactionForm({ initialMode = "DEPOSIT" }: Unif
                     type="text"
                     value={createUnitForm.unit_name}
                     onChange={(e) => setCreateUnitForm({ ...createUnitForm, unit_name: e.target.value })}
-                    className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                    style={{ borderColor: BORDER }}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                     placeholder="Enter unit name"
                   />
                 </div>
@@ -1871,15 +1900,14 @@ export default function UnifiedTransactionForm({ initialMode = "DEPOSIT" }: Unif
                   <textarea
                     value={createUnitForm.notes}
                     onChange={(e) => setCreateUnitForm({ ...createUnitForm, notes: e.target.value })}
-                    className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                    style={{ borderColor: BORDER }}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                     placeholder="Enter any additional notes"
                     rows={3}
                   />
                 </div>
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 p-4 border-t" style={{ borderColor: BORDER }}>
+            <div className="flex items-center justify-end gap-3 p-5 border-t border-gray-100">
               <button
                 onClick={() => {
                   setShowCreateUnitPanel(false);
@@ -1891,8 +1919,7 @@ export default function UnifiedTransactionForm({ initialMode = "DEPOSIT" }: Unif
                   });
                   setPropertySearchQuery("");
                 }}
-                className="px-6 py-2.5 rounded-md font-semibold border-2 hover:bg-slate-50 transition-colors"
-                style={{ borderColor: BORDER }}
+                className="px-6 py-2.5 rounded-xl font-semibold border border-gray-200 hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
@@ -1902,8 +1929,7 @@ export default function UnifiedTransactionForm({ initialMode = "DEPOSIT" }: Unif
                   setShowCreateUnitConfirmation(true);
                 }}
                 disabled={!createUnitForm.unit_name.trim() || !formData.to_owner_id}
-                className="px-6 py-2.5 rounded-md font-bold text-white hover:opacity-95 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
-                style={{ background: "#7a0f1f" }}
+                className="px-6 py-2.5 rounded-xl font-semibold bg-[#7B0F2B] text-white hover:bg-[#8B1535] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 Create Unit
               </button>
