@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Search, List, X, Inbox, Plus, Eye, User, Building2, ChevronDown, Filter, ArrowUpDown } from "lucide-react";
+import { Search, X, Inbox, Plus, Eye, User, Building2, ChevronDown, Filter, ArrowUpDown, Users, Mail, Phone } from "lucide-react";
 import SuccessModal from "@/components/ui/SuccessModal";
 import LoadingModal from "@/components/ui/LoadingModal";
 import FailModal from "@/components/ui/FailModal";
@@ -51,7 +51,7 @@ type Unit = {
   property?: Property | null;
 };
 
-const BORDER = "rgba(0,0,0,0.12)";
+const BORDER = "rgba(0,0,0,0.08)";
 
 // Status badge utility function
 const getStatusBadge = (status: string): string => {
@@ -139,8 +139,8 @@ const Pagination = ({
   if (!paginationMeta || paginationMeta.total === 0) return null;
 
   return (
-    <div className="flex items-center justify-between py-3 border-b" style={{ borderColor: BORDER }}>
-      <div className="text-sm text-neutral-600">
+    <div className="flex items-center justify-between py-4 border-b border-gray-100">
+      <div className="text-sm text-gray-600">
         Showing {paginationMeta.from} to {paginationMeta.to} of {paginationMeta.total} {itemName}
       </div>
       {paginationMeta.last_page > 1 && (
@@ -148,8 +148,7 @@ const Pagination = ({
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={paginationMeta.current_page === 1}
-            className="px-3 py-1.5 rounded-md text-sm font-medium border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-            style={{ borderColor: BORDER }}
+            className="px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7B0F2B]/5 hover:border-[#7B0F2B]/30 transition-all"
           >
             Previous
           </button>
@@ -161,16 +160,15 @@ const Pagination = ({
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium ${
-                      paginationMeta.current_page === page ? "bg-[#7a0f1f] text-white" : "border hover:bg-gray-50"
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                      paginationMeta.current_page === page ? "bg-[#7B0F2B] text-white" : "border border-gray-200 hover:bg-gray-50"
                     }`}
-                    style={paginationMeta.current_page !== page ? { borderColor: BORDER } : undefined}
                   >
                     {page}
                   </button>
                 );
               } else if (page === paginationMeta.current_page - 2 || page === paginationMeta.current_page + 2) {
-                return <span key={page} className="px-2 text-neutral-500">...</span>;
+                return <span key={page} className="px-2 text-gray-500">...</span>;
               }
               return null;
             })}
@@ -178,8 +176,7 @@ const Pagination = ({
           <button
             onClick={() => setCurrentPage((p) => Math.min(paginationMeta.last_page, p + 1))}
             disabled={paginationMeta.current_page === paginationMeta.last_page}
-            className="px-3 py-1.5 rounded-md text-sm font-medium border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-            style={{ borderColor: BORDER }}
+            className="px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7B0F2B]/5 hover:border-[#7B0F2B]/30 transition-all"
           >
             Next
           </button>
@@ -190,25 +187,22 @@ const Pagination = ({
 };
 
 const OwnerTableSkeleton = () => (
-  <div className="space-y-3">
-    {[...Array(5)].map((_, i) => (
-      <div key={i} className="rounded-md bg-white border shadow-sm p-4" style={{ borderColor: BORDER }}>
-        <div className="animate-pulse">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 flex-1">
-              <div className="w-12 h-12 bg-gray-200 rounded-md"></div>
-              <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-2">
-                <div className="h-4 bg-gray-200 rounded w-32"></div>
-                <div className="h-4 bg-gray-200 rounded w-24"></div>
-                <div className="h-4 bg-gray-200 rounded w-40"></div>
-                <div className="h-4 bg-gray-200 rounded w-32"></div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="h-6 bg-gray-200 rounded w-16"></div>
-              <div className="h-8 bg-gray-200 rounded w-20"></div>
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {[...Array(6)].map((_, i) => (
+      <div key={i} className="rounded-2xl border border-gray-100 bg-white p-5 animate-pulse">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3 flex-1">
+            <div className="w-12 h-12 bg-gray-200 rounded-xl" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-3/4" />
+              <div className="h-3 bg-gray-200 rounded w-1/3" />
             </div>
           </div>
+          <div className="h-6 bg-gray-200 rounded-lg w-16" />
+        </div>
+        <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+          <div className="h-3 bg-gray-200 rounded w-full" />
+          <div className="h-3 bg-gray-200 rounded w-2/3" />
         </div>
       </div>
     ))}
@@ -1188,321 +1182,265 @@ export default function OwnersPage() {
   };
 
   return (
-    <div className="min-h-full flex flex-col">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-[#7B0F2B] via-[#8B1535] to-[#A4163A] text-white px-6 py-5 flex items-center justify-between shrink-0 border-b border-[#6A0D25]/30">
-        <div>
-          <h1 className="text-lg font-semibold tracking-wide">Owners</h1>
+    <div className="min-h-full flex flex-col bg-gray-50/80">
+      {/* Header - Hero style, sticky */}
+      <div className="sticky top-0 z-20 shrink-0 relative overflow-hidden bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white px-6 py-8">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50" />
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center border border-white/20">
+              <Users className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">Owners</h1>
+              <p className="text-white/80 text-sm mt-0.5">Manage clients, companies, and fund owners</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowCreatePanel(true)}
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold bg-white text-[#7B0F2B] hover:bg-white/95 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+          >
+            <Plus className="w-4 h-4" />
+            Create Owner
+          </button>
         </div>
       </div>
 
-      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
-        <section className="rounded-md bg-white p-5 shadow-sm border" style={{ borderColor: BORDER }}>
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-[#5f0c18]">Owner List</h2>
-              <p className="text-sm text-gray-600 mt-1">Manage fund owners</p>
-            </div>
-            <button
-              onClick={() => setShowCreatePanel(true)}
-              className="inline-flex items-center gap-2 rounded-md px-4 py-2 h-10 text-sm font-semibold bg-[#7a0f1f] text-white hover:opacity-95 transition-all shadow-sm hover:shadow-md"
-            >
-              <Plus className="w-4 h-4" />
-              Create Owner
-            </button>
-          </div>
-
-          {/* Summary Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-            <div className="bg-white border rounded-lg p-4 border-gray-200">
-              <div className="text-sm text-gray-600 mb-1">Total Owners</div>
-              <div className="text-2xl font-bold text-gray-900">{summaryStats.total}</div>
-            </div>
-            <div className="bg-white border rounded-lg p-4 border-green-200 bg-green-50/50">
-              <div className="text-sm text-gray-600 mb-1">Active</div>
-              <div className="text-2xl font-bold text-green-700">{summaryStats.active}</div>
-            </div>
-            <div className="bg-white border rounded-lg p-4 border-gray-200">
-              <div className="text-sm text-gray-600 mb-1">Inactive</div>
-              <div className="text-2xl font-bold text-gray-700">{summaryStats.inactive}</div>
-            </div>
-            <div className="bg-white border rounded-lg p-4 border-yellow-200 bg-yellow-50/50">
-              <div className="text-sm text-gray-600 mb-1">Suspended</div>
-              <div className="text-2xl font-bold text-yellow-700">{summaryStats.suspended}</div>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mt-6">
-            {/* Filters Section - Lighter Design */}
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Status Filter */}
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2 text-sm font-medium text-[#7a0f1f]">
-                  <Filter className="w-4 h-4" />
-                  <label>Status</label>
+      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-8 -mt-4">
+        <section className="rounded-2xl bg-white shadow-sm border border-gray-100 overflow-hidden">
+          {/* Summary Stats - Card row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-gray-50/50 border-b border-gray-100">
+            <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-[#7B0F2B]/10 flex items-center justify-center">
+                  <Users className="w-5 h-5 text-[#7B0F2B]" />
                 </div>
-                <div className="flex items-center gap-2">
-                <button
-                    onClick={() => setStatusFilter("ALL")}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all border ${
-                      statusFilter === "ALL"
-                        ? "bg-[#7a0f1f] text-white shadow-sm border-[#7a0f1f]"
-                        : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-[#7a0f1f]/40"
-                    }`}
-                  >
-                    All
-                  </button>
-                  <button
-                    onClick={() => setStatusFilter("ACTIVE")}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all border ${
-                      statusFilter === "ACTIVE"
-                        ? "bg-[#7a0f1f] text-white shadow-sm border-[#7a0f1f]"
-                        : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-[#7a0f1f]/40"
-                    }`}
-                  >
-                    Active
-                  </button>
-                  <button
-                    onClick={() => setStatusFilter("INACTIVE")}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all border ${
-                      statusFilter === "INACTIVE"
-                        ? "bg-[#7a0f1f] text-white shadow-sm border-[#7a0f1f]"
-                        : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-[#7a0f1f]/40"
-                    }`}
-                  >
-                    Inactive
-                  </button>
-                  <button
-                    onClick={() => setStatusFilter("SUSPENDED")}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all border ${
-                      statusFilter === "SUSPENDED"
-                        ? "bg-[#7a0f1f] text-white shadow-sm border-[#7a0f1f]"
-                        : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-[#7a0f1f]/40"
-                    }`}
-                  >
-                    Suspended
-                  </button>
+                <div>
+                  <div className="text-2xl font-bold text-gray-900">{summaryStats.total}</div>
+                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Total</div>
                 </div>
               </div>
-
-              {/* Owner Type Filter */}
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2 text-sm font-medium text-[#7a0f1f]">
-                  <User className="w-4 h-4" />
-                  <label>Type</label>
+            </div>
+            <div className="bg-white rounded-xl p-4 border border-emerald-100 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    onClick={() => setOwnerTypeFilter("ALL")}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all border ${
-                      ownerTypeFilter === "ALL"
-                        ? "bg-[#7a0f1f] text-white shadow-sm border-[#7a0f1f]"
-                        : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-[#7a0f1f]/40"
-                    }`}
-                  >
-                    All
-                  </button>
-                  <button
-                    onClick={() => setOwnerTypeFilter("CLIENT")}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all border ${
-                      ownerTypeFilter === "CLIENT"
-                        ? "bg-[#7a0f1f] text-white shadow-sm border-[#7a0f1f]"
-                        : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-[#7a0f1f]/40"
-                    }`}
-                  >
-                    Client
-                  </button>
-                  <button
-                    onClick={() => setOwnerTypeFilter("COMPANY")}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all border ${
-                      ownerTypeFilter === "COMPANY"
-                        ? "bg-[#7a0f1f] text-white shadow-sm border-[#7a0f1f]"
-                        : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-[#7a0f1f]/40"
-                    }`}
-                  >
-                    Company
-                  </button>
-                  <button
-                    onClick={() => setOwnerTypeFilter("MAIN")}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all border ${
-                      ownerTypeFilter === "MAIN"
-                        ? "bg-[#7a0f1f] text-white shadow-sm border-[#7a0f1f]"
-                        : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-[#7a0f1f]/40"
-                    }`}
-                  >
-                    Main
-                  </button>
-                  <button
-                    onClick={() => setOwnerTypeFilter("SYSTEM")}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all border ${
-                      ownerTypeFilter === "SYSTEM"
-                        ? "bg-[#7a0f1f] text-white shadow-sm border-[#7a0f1f]"
-                        : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-[#7a0f1f]/40"
-                    }`}
-                  >
-                    System
-                  </button>
+                <div>
+                  <div className="text-2xl font-bold text-emerald-700">{summaryStats.active}</div>
+                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Active</div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-gray-500" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-gray-700">{summaryStats.inactive}</div>
+                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Inactive</div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl p-4 border border-amber-100 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-amber-500" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-amber-700">{summaryStats.suspended}</div>
+                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Suspended</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between p-6">
+            {/* Filters Section */}
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-[#7B0F2B]" />
+                <span className="text-sm font-semibold text-gray-700">Status</span>
+                <div className="flex gap-1.5">
+                  {(["ALL", "ACTIVE", "INACTIVE", "SUSPENDED"] as const).map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setStatusFilter(s)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        statusFilter === s
+                          ? "bg-[#7B0F2B] text-white"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="h-6 w-px bg-gray-200" />
+              <div className="flex items-center gap-2">
+                <User className="w-4 h-4 text-[#7B0F2B]" />
+                <span className="text-sm font-semibold text-gray-700">Type</span>
+                <div className="flex gap-1.5 flex-wrap">
+                  {(["ALL", "CLIENT", "COMPANY", "MAIN", "SYSTEM"] as const).map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setOwnerTypeFilter(t)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        ownerTypeFilter === t
+                          ? "bg-[#7B0F2B] text-white"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
 
-            {/* Search, View Toggle, and Sort Section */}
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
-              {/* Refresh Button */}
+            {/* Search & Sort */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
               <button
                 onClick={() => fetchOwners()}
-                className="p-2 rounded-md border border-gray-200 hover:bg-gray-50 transition-all hover:border-[#7a0f1f]/40"
+                className="p-2.5 rounded-xl border border-gray-200 hover:bg-[#7B0F2B]/5 hover:border-[#7B0F2B]/30 transition-all"
                 title="Refresh"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M4 12a8 8 0 0 1 14.9-3M20 12a8 8 0 0 1-14.9 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M18 5v4h-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M6 19v-4h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M4 12a8 8 0 0 1 14.9-3M20 12a8 8 0 0 1-14.9 3" />
+                  <path d="M18 5v4h-4M6 19v-4h4" />
                 </svg>
               </button>
-
-              {/* Search Input */}
-              <div className="relative flex-1 group min-w-[220px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none z-10 transition-colors group-hover:text-[#7a0f1f]/70" />
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by name, type, phone, email..."
-                  className="w-full rounded-md border border-gray-200 bg-white px-10 py-2 h-10 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-[#7a0f1f]/20 focus:border-[#7a0f1f] disabled:opacity-60 transition-all hover:border-[#7a0f1f]/40 hover:bg-gray-50/50"
+                  placeholder="Search owners..."
+                  className="w-full rounded-xl border border-gray-200 pl-10 pr-10 py-2.5 h-10 text-sm focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] outline-none transition-all"
                 />
                 {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-[#7a0f1f] transition-colors p-0.5 rounded hover:bg-[#7a0f1f]/10"
-                  >
+                  <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#7B0F2B]">
                     <X className="w-4 h-4" />
                   </button>
                 )}
               </div>
-
-              {/* Sort Selector */}
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2 text-sm font-medium text-[#7a0f1f]">
-                  <ArrowUpDown className="w-4 h-4" />
-                  <label>Sort</label>
-                </div>
-                <div className="relative min-w-[220px]">
-                  <select
-                    value={`${sortBy}-${sortOrder}`}
-                    onChange={(e) => {
-                      const [newSortBy, newSortOrder] = e.target.value.split('-') as [typeof sortBy, typeof sortOrder];
-                      setSortBy(newSortBy);
-                      setSortOrder(newSortOrder);
-                    }}
-                    className="w-full h-10 rounded-md border border-gray-200 bg-white px-3 pr-10 text-sm transition-all hover:border-[#7a0f1f]/40 hover:bg-gray-50/50 focus:ring-2 focus:ring-[#7a0f1f]/20 focus:border-[#7a0f1f] focus:outline-none cursor-pointer appearance-none"
-                  >
-                    <option value="date-desc">Date Created (Newest First)</option>
-                    <option value="date-asc">Date Created (Oldest First)</option>
-                    <option value="name-asc">Name (A-Z)</option>
-                    <option value="name-desc">Name (Z-A)</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none" />
-                </div>
+                <ArrowUpDown className="w-4 h-4 text-[#7B0F2B]" />
+                <select
+                  value={`${sortBy}-${sortOrder}`}
+                  onChange={(e) => {
+                    const [newSortBy, newSortOrder] = e.target.value.split("-") as [typeof sortBy, typeof sortOrder];
+                    setSortBy(newSortBy);
+                    setSortOrder(newSortOrder);
+                  }}
+                  className="rounded-xl border border-gray-200 px-4 py-2.5 h-10 text-sm focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] outline-none cursor-pointer min-w-[200px]"
+                >
+                  <option value="date-desc">Newest first</option>
+                  <option value="date-asc">Oldest first</option>
+                  <option value="name-asc">Name A–Z</option>
+                  <option value="name-desc">Name Z–A</option>
+                </select>
               </div>
             </div>
           </div>
 
-          {/* Pagination at the top */}
+          {/* Pagination */}
           {paginationMeta && (
-            <Pagination
-              paginationMeta={paginationMeta}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              itemName="owners"
-            />
+            <div className="px-6">
+              <Pagination
+                paginationMeta={paginationMeta}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                itemName="owners"
+              />
+            </div>
           )}
 
-          <div className="mt-4">
+          <div className="p-6 pt-0">
             {loading ? (
-                <OwnerTableSkeleton />
+              <OwnerTableSkeleton />
             ) : paginatedOwners.length === 0 ? (
-              <div className="px-4 py-10 flex flex-col items-center justify-center text-center">
-                <Inbox className="w-16 h-16 text-gray-300 mx-auto mb-4" aria-hidden />
-                <div className="text-3xl font-bold text-[#5f0c18]">No data</div>
-                <div className="mt-2 text-xs text-neutral-800 mb-4">Create an owner or adjust your search.</div>
+              <div className="px-4 py-16 flex flex-col items-center justify-center text-center rounded-2xl bg-gray-50/80 border-2 border-dashed border-gray-200">
+                <div className="w-16 h-16 rounded-2xl bg-[#7B0F2B]/10 flex items-center justify-center mb-4">
+                  <Inbox className="w-8 h-8 text-[#7B0F2B]" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900">No owners found</h3>
+                <p className="text-sm text-gray-500 mt-1 mb-6 max-w-sm">Create an owner or adjust your filters.</p>
                 <button
                   onClick={() => setShowCreatePanel(true)}
-                  className="px-4 py-2 bg-[#7a0f1f] text-white rounded-md hover:opacity-95 transition-opacity inline-flex items-center gap-2"
+                  className="px-5 py-2.5 bg-[#7B0F2B] text-white rounded-xl font-semibold hover:bg-[#8B1535] transition-colors inline-flex items-center gap-2"
                 >
                   <Plus className="w-4 h-4" />
                   Create Owner
                 </button>
               </div>
             ) : (
-              <div>
-                <div className="rounded-md border bg-neutral-50 mb-2" style={{ borderColor: BORDER }}>
-                  <div className="px-3 py-2">
-                    <div className="flex items-center gap-4 text-xs font-bold text-neutral-900">
-                      <div className="min-w-[180px]" style={{ borderColor: BORDER }}>NAME</div>
-                      <div className="min-w-[120px] border-l pl-3" style={{ borderColor: BORDER }}>TYPE</div>
-                      <div className="min-w-[140px] border-l pl-3" style={{ borderColor: BORDER }}>PHONE</div>
-                      <div className="flex-1 min-w-0 border-l pl-3" style={{ borderColor: BORDER }}>EMAIL</div>
-                      <div className="min-w-[100px] text-right border-l pl-3" style={{ borderColor: BORDER }}>STATUS</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  {paginatedOwners.map((owner) => {
-                    const isHighlighted = highlightOwnerId === owner.id;
-                    return (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {paginatedOwners.map((owner) => {
+                  const isHighlighted = highlightOwnerId === owner.id;
+                  return (
                     <div
                       key={owner.id}
                       onClick={() => openDetailDrawer(owner.id)}
-                      className={`rounded-md bg-white border shadow-sm hover:shadow-md transition-all p-3 cursor-pointer ${
-                        isHighlighted ? "ring-2 ring-[#7a0f1f] ring-offset-2 bg-[#7a0f1f]/5" : ""
-                      }`}
-                      style={{ borderColor: BORDER }}
                       ref={(el) => {
                         if (isHighlighted && el) {
                           setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
                         }
                       }}
+                      className={`group rounded-2xl border bg-white p-5 cursor-pointer transition-all hover:shadow-lg hover:border-[#7B0F2B]/30 hover:-translate-y-0.5 ${
+                        isHighlighted ? "ring-2 ring-[#7B0F2B] ring-offset-2 border-[#7B0F2B]" : "border-gray-100"
+                      }`}
                     >
-                      <div className="flex items-center gap-4 text-sm">
-                        {/* Owner Name */}
-                        <div className="min-w-[180px]" style={{ borderColor: BORDER }}>
-                          <div className="text-sm font-semibold text-gray-900 truncate" title={owner.name}>
-                            {owner.name}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className="w-12 h-12 rounded-xl bg-[#7B0F2B]/10 flex items-center justify-center shrink-0">
+                            <User className="w-6 h-6 text-[#7B0F2B]" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="font-semibold text-gray-900 truncate" title={owner.name}>
+                              {owner.name}
+                            </div>
+                            <div className="text-xs text-[#7B0F2B] font-medium mt-0.5">{owner.owner_type || "—"}</div>
                           </div>
                         </div>
-
-                        {/* Owner Type */}
-                        <div className="min-w-[120px] border-l pl-3" style={{ borderColor: BORDER }}>
-                          <div className="text-sm text-gray-900">
-                            {owner.owner_type || "—"}
-                          </div>
-                        </div>
-
-                        {/* Phone */}
-                        <div className="min-w-[140px] border-l pl-3" style={{ borderColor: BORDER }}>
-                          <div className="text-sm text-gray-900 truncate" title={owner.phone ?? owner.phone_number ?? undefined}>
-                            {owner.phone ?? owner.phone_number ?? "—"}
-                          </div>
-                        </div>
-
-                        {/* Email */}
-                        <div className="flex-1 min-w-0 border-l pl-3" style={{ borderColor: BORDER }}>
-                          <div className="text-sm text-gray-900 truncate" title={owner.email ?? undefined}>
-                            {owner.email || "—"}
-                          </div>
-                        </div>
-
-                        {/* Status */}
-                        <div className="min-w-[100px] text-right border-l border-gray-200 pl-3">
-                          <div className={`px-2 py-1 rounded text-xs font-semibold inline-block ${getStatusBadge(owner.status || "ACTIVE")}`}>
-                            {typeof owner.status === "string" ? owner.status.toUpperCase() : "ACTIVE"}
-                          </div>
-                        </div>
+                        <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold shrink-0 ${getStatusBadge(owner.status || "ACTIVE")}`}>
+                          {typeof owner.status === "string" ? owner.status.toUpperCase() : "ACTIVE"}
+                        </span>
+                      </div>
+                      <div className="mt-4 space-y-2 pt-4 border-t border-gray-100">
+                        {(owner.email || owner.phone || owner.phone_number) && (
+                          <>
+                            {owner.email && (
+                              <div className="flex items-center gap-2 text-sm text-gray-600 truncate">
+                                <Mail className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                <span className="truncate" title={owner.email}>{owner.email}</span>
+                              </div>
+                            )}
+                            {(owner.phone || owner.phone_number) && (
+                              <div className="flex items-center gap-2 text-sm text-gray-600 truncate">
+                                <Phone className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                <span className="truncate" title={owner.phone ?? owner.phone_number ?? undefined}>
+                                  {owner.phone ?? owner.phone_number ?? "—"}
+                                </span>
+                              </div>
+                            )}
+                          </>
+                        )}
+                        {!owner.email && !owner.phone && !owner.phone_number && (
+                          <div className="text-xs text-gray-400">No contact info</div>
+                        )}
+                      </div>
+                      <div className="mt-3 flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-xs font-medium text-[#7B0F2B] flex items-center gap-1">
+                          View details
+                          <Eye className="w-3.5 h-3.5" />
+                        </span>
                       </div>
                     </div>
-                    );
-                  })}
-                </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -1530,15 +1468,15 @@ export default function OwnersPage() {
               aria-hidden="true"
             />
             <div
-              className="fixed top-0 right-0 bottom-0 w-full max-w-4xl h-screen bg-white z-50 flex flex-col rounded-md overflow-hidden shadow-xl"
+              className="fixed top-0 right-0 bottom-0 w-full max-w-4xl h-screen bg-white z-50 flex flex-col overflow-hidden shadow-2xl"
               style={{
                 animation: detailDrawerClosing
                   ? "slideOut 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards"
                   : "slideIn 0.4s cubic-bezier(0.32, 0.72, 0, 1)",
-                boxShadow: "-8px 0 24px rgba(0,0,0,0.15)",
+                boxShadow: "-12px 0 40px rgba(123,15,43,0.12)",
               }}
             >
-              <div className="flex-shrink-0 flex items-center justify-between p-4 bg-gradient-to-r from-[#800020] via-[#A0153E] to-[#C9184A] text-white">
+              <div className="flex-shrink-0 flex items-center justify-between p-5 bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white">
                 <div className="flex items-center gap-3">
                   <div>
                     <h2 className="text-lg font-bold">{detailOwner ? detailOwner.name : loadingDetail ? "Loading..." : "Owner Details"}</h2>
@@ -1550,7 +1488,7 @@ export default function OwnersPage() {
                     </div>
                   )}
                 </div>
-                <button onClick={closeDetailDrawer} className="p-2 rounded-md hover:bg-white/20 transition-colors" aria-label="Close">
+                <button onClick={closeDetailDrawer} className="p-2 rounded-xl hover:bg-white/20 transition-colors" aria-label="Close">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -1574,8 +1512,7 @@ export default function OwnersPage() {
                           type="text"
                           value={detailFormData.owner_code || ""}
                           disabled
-                          className="w-full rounded-md border px-3 py-2 text-sm outline-none bg-gray-50 text-gray-600 cursor-not-allowed"
-                          style={{ borderColor: BORDER }}
+                          className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none bg-gray-50 text-gray-600 cursor-not-allowed"
                         />
                       </div>
                       <div>
@@ -1585,8 +1522,7 @@ export default function OwnersPage() {
                         <select
                           value={detailFormData.owner_type || "CLIENT"}
                           onChange={(e) => setDetailFormData({ ...detailFormData, owner_type: e.target.value as OwnerType })}
-                          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                          style={{ borderColor: BORDER }}
+                          className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all disabled:opacity-60"
                           disabled={detailOwner?.is_system === true}
                         >
                           <option value="CLIENT">Client</option>
@@ -1612,10 +1548,9 @@ export default function OwnersPage() {
                                 name: e.target.value.toUpperCase(),
                               })
                             }
-                            className={`uppercase w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20 ${
-                              nameError ? "border-red-500" : ""
+                            className={`uppercase w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all ${
+                              nameError ? "border-red-500" : "border-gray-200"
                             }`}
-                            style={nameError ? {} : { borderColor: BORDER }}
                           />
                           {checkingName && (
                             <p className="text-xs text-gray-500 mt-1">Checking availability...</p>
@@ -1632,8 +1567,7 @@ export default function OwnersPage() {
                         <textarea
                           value={detailFormData.description || ""}
                           onChange={(e) => setDetailFormData({ ...detailFormData, description: e.target.value })}
-                          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                          style={{ borderColor: BORDER }}
+                          className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                           placeholder="Optional internal notes (e.g., Primary operational account)"
                           rows={3}
                         />
@@ -1647,10 +1581,9 @@ export default function OwnersPage() {
                             type="email"
                             value={detailFormData.email || ""}
                             onChange={(e) => setDetailFormData({ ...detailFormData, email: e.target.value })}
-                            className={`w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20 ${
-                              emailError ? "border-red-500" : ""
+                            className={`w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all ${
+                              emailError ? "border-red-500" : "border-gray-200"
                             }`}
-                            style={emailError ? {} : { borderColor: BORDER }}
                           />
                           {emailError && (
                             <p className="text-xs text-red-500 mt-1">{emailError}</p>
@@ -1665,8 +1598,7 @@ export default function OwnersPage() {
                           type="text"
                           value={detailFormData.phone || ""}
                           onChange={(e) => setDetailFormData({ ...detailFormData, phone: formatPhoneNumber(e.target.value) })}
-                          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                          style={{ borderColor: BORDER }}
+                          className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                         />
                       </div>
                       <div className="md:col-span-2">
@@ -1676,8 +1608,7 @@ export default function OwnersPage() {
                         <textarea
                           value={detailFormData.address || ""}
                           onChange={(e) => setDetailFormData({ ...detailFormData, address: e.target.value })}
-                          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                          style={{ borderColor: BORDER }}
+                          className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                           rows={3}
                         />
                       </div>
@@ -1698,8 +1629,7 @@ export default function OwnersPage() {
                               setDetailFormData({ ...detailFormData, status: newStatus });
                             }
                           }}
-                          className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                          style={{ borderColor: BORDER }}
+                          className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                         >
                           <option value="ACTIVE">Active</option>
                           <option value="INACTIVE">Inactive</option>
@@ -1709,7 +1639,7 @@ export default function OwnersPage() {
                     </div>
 
                     {/* Units Section */}
-                    <div className="mt-8 pt-8 border-t" style={{ borderColor: BORDER }}>
+                    <div className="mt-8 pt-8 border-t border-gray-100">
                         <div className="flex items-center justify-between mb-4">
                           <div>
                             <h3 className="text-base font-semibold text-neutral-900">Units</h3>
@@ -1717,8 +1647,7 @@ export default function OwnersPage() {
                           </div>
                           <button
                             onClick={() => openUnitForm()}
-                            className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium text-white hover:opacity-95"
-                            style={{ background: "#7a0f1f" }}
+                            className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold bg-[#7B0F2B] text-white hover:bg-[#8B1535] transition-colors"
                           >
                             <Plus className="w-4 h-4" />
                             Add Unit
@@ -1736,7 +1665,7 @@ export default function OwnersPage() {
                           </div>
                         ) : (
                           <div>
-                            <div className="rounded-md border bg-neutral-50 px-4 py-0 mb-3" style={{ borderColor: BORDER }}>
+                            <div className="rounded-xl border border-gray-100 bg-gray-50/50 px-4 py-0 mb-3">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4 flex-1 min-w-0">
                                   <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-3 gap-2 py-2 text-sm font-bold text-neutral-900">
@@ -1754,8 +1683,7 @@ export default function OwnersPage() {
                               {units.map((unit) => (
                                 <div
                                   key={unit.id}
-                                  className="rounded-md bg-white border shadow-sm p-4 hover:shadow-md transition-shadow"
-                                  style={{ borderColor: BORDER }}
+                                  className="rounded-xl bg-white border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow"
                                 >
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -1770,7 +1698,7 @@ export default function OwnersPage() {
                                         </div>
                                         <div className="min-w-0">
                                           <div
-                                            className={`px-3 py-1.5 rounded-md text-xs font-semibold inline-block ${
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold inline-block ${
                                               unit.status === "ACTIVE" ? "bg-green-100 text-green-700" : 
                                               unit.status === "INACTIVE" ? "bg-gray-100 text-gray-700" : 
                                               "bg-red-100 text-red-700"
@@ -1785,7 +1713,7 @@ export default function OwnersPage() {
                                     <div className="flex items-center gap-3 shrink-0">
                                       <button
                                         onClick={() => openUnitForm(unit)}
-                                        className="p-1.5 rounded-md hover:bg-gray-100 transition-colors"
+                                        className="p-1.5 rounded-xl hover:bg-gray-100 transition-colors"
                                         title="View unit"
                                       >
                                         <Eye className="w-4 h-4 text-gray-600" />
@@ -1793,7 +1721,7 @@ export default function OwnersPage() {
                                     </div>
                                   </div>
                                   {unit.notes && (
-                                    <div className="mt-3 pt-3 border-t" style={{ borderColor: BORDER }}>
+                                    <div className="mt-3 pt-3 border-t border-gray-100">
                                       <div className="text-xs text-neutral-500 mb-1">Notes:</div>
                                       <div className="text-sm text-neutral-700 whitespace-pre-wrap">{unit.notes}</div>
                                     </div>
@@ -1808,13 +1736,13 @@ export default function OwnersPage() {
                 )}
               </div>
               {detailOwner && (
-                <div className="sticky bottom-0 bg-white border-t border-gray-200 flex items-center justify-end gap-3 p-4 z-10">
+                <div className="sticky bottom-0 bg-white border-t border-gray-100 flex items-center justify-end gap-3 p-5 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
                   <button
                     onClick={() => handleSaveOwner(detailFormData)}
                     disabled={savingOwner || !!nameError || !!emailError}
-                    className="px-6 py-2.5 rounded-md font-semibold bg-[#7a0f1f] text-white hover:opacity-95 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="px-6 py-2.5 rounded-xl font-semibold bg-[#7B0F2B] text-white hover:bg-[#8B1535] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    {savingOwner ? "Saving..." : "Save"}
+                    {savingOwner ? "Saving..." : "Save Changes"}
                   </button>
                 </div>
               )}
@@ -1909,13 +1837,13 @@ export default function OwnersPage() {
             aria-hidden="true"
           />
           <div
-            className="fixed top-0 right-0 bottom-0 w-full max-w-md h-screen bg-white z-50 flex flex-col rounded-md overflow-hidden shadow-xl"
+            className="fixed top-0 right-0 bottom-0 w-full max-w-md h-screen bg-white z-50 flex flex-col rounded-l-2xl overflow-hidden shadow-2xl"
             style={{
               animation: "slideIn 0.4s cubic-bezier(0.32, 0.72, 0, 1)",
-              boxShadow: "-8px 0 24px rgba(0,0,0,0.15)",
+              boxShadow: "-12px 0 40px rgba(123,15,43,0.12)",
             }}
           >
-            <div className="flex-shrink-0 flex items-center justify-between p-4 bg-gradient-to-r from-[#800020] via-[#A0153E] to-[#C9184A] text-white">
+            <div className="flex-shrink-0 flex items-center justify-between p-5 bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white">
               <div>
                 <h2 className="text-lg font-bold">{editingUnit ? "Edit Unit" : "Add New Unit"}</h2>
                 <p className="text-sm text-white/90 mt-0.5">
@@ -1924,7 +1852,7 @@ export default function OwnersPage() {
               </div>
               <button
                 onClick={closeUnitForm}
-                className="p-2 rounded-md hover:bg-white/20 transition-colors"
+                className="p-2 rounded-xl hover:bg-white/20 transition-colors"
                 aria-label="Close"
               >
                 <X className="w-5 h-5" />
@@ -1940,8 +1868,7 @@ export default function OwnersPage() {
                     type="text"
                     value={unitFormData.unit_name}
                     onChange={(e) => setUnitFormData({ ...unitFormData, unit_name: e.target.value.toUpperCase() })}
-                    className="uppercase w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                    style={{ borderColor: BORDER }}
+                    className="uppercase w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                     placeholder="Enter unit name"
                   />
                 </div>
@@ -1958,8 +1885,7 @@ export default function OwnersPage() {
                           setShowPropertyDropdown(true);
                         }}
                         onFocus={() => setShowPropertyDropdown(true)}
-                        className="w-full rounded-md border px-10 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                        style={{ borderColor: BORDER }}
+                        className="w-full rounded-xl border border-gray-200 px-10 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                         placeholder="Search properties..."
                       />
                       {unitFormData.property_id && (
@@ -1981,7 +1907,7 @@ export default function OwnersPage() {
                           className="fixed inset-0 z-10"
                           onClick={() => setShowPropertyDropdown(false)}
                         />
-                        <div className="absolute z-20 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto" style={{ borderColor: BORDER }}>
+                        <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto">
                           {loadingProperties ? (
                             <div className="p-4 text-center text-sm text-gray-500">Loading properties...</div>
                           ) : filteredProperties.length === 0 ? (
@@ -2008,10 +1934,9 @@ export default function OwnersPage() {
                                     setPropertySearchQuery(property.name);
                                     setShowPropertyDropdown(false);
                                   }}
-                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors border-t ${
+                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors border-t border-gray-100 ${
                                     unitFormData.property_id === property.id ? "bg-gray-50" : ""
                                   }`}
-                                  style={{ borderColor: BORDER }}
                                 >
                                   <div className="font-medium">{property.name}</div>
                                   <div className="text-xs text-gray-500 mt-0.5">{property.property_type}</div>
@@ -2042,8 +1967,7 @@ export default function OwnersPage() {
                         setUnitFormData({ ...unitFormData, status: newStatus });
                       }
                     }}
-                    className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                    style={{ borderColor: BORDER }}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                   >
                     <option value="ACTIVE">Active</option>
                     <option value="INACTIVE">Inactive</option>
@@ -2054,18 +1978,17 @@ export default function OwnersPage() {
                   <textarea
                     value={unitFormData.notes}
                     onChange={(e) => setUnitFormData({ ...unitFormData, notes: e.target.value })}
-                    className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#7a0f1f]/20"
-                    style={{ borderColor: BORDER }}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
                     placeholder="Enter any additional notes"
                     rows={3}
                   />
                 </div>
               </div>
             </div>
-            <div className="flex-shrink-0 flex items-center justify-end gap-3 p-4 border-t" style={{ borderColor: BORDER }}>
+            <div className="flex-shrink-0 flex items-center justify-end gap-3 p-5 border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
               <button
                 onClick={closeUnitForm}
-                  className="px-6 py-2.5 rounded-md font-semibold border-2 border-gray-200 hover:bg-slate-50 transition-colors"
+                className="px-6 py-2.5 rounded-xl font-semibold border border-gray-200 hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
@@ -2078,8 +2001,7 @@ export default function OwnersPage() {
                   }
                 }}
                 disabled={savingUnit || !unitFormData.unit_name.trim()}
-                className="px-6 py-2.5 rounded-md font-semibold text-white hover:opacity-95 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
-                style={{ background: "#7a0f1f" }}
+                className="px-6 py-2.5 rounded-xl font-semibold bg-[#7B0F2B] text-white hover:bg-[#8B1535] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {savingUnit ? "Saving..." : editingUnit ? "Update" : "Create"}
               </button>

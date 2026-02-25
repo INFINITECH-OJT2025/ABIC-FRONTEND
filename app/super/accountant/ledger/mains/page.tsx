@@ -2,11 +2,12 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, X, Building2, Columns2, Receipt } from "lucide-react";
+import { Search, X, Building2, Columns2, Receipt, Plus } from "lucide-react";
 import { OwnerSelectModal } from "@/components/owner-ledger/OwnerSelectModal";
 import {
   fuzzyMatch,
   ImagePreviewPanel,
+  TransactionSidePanel,
   EndingBalance,
   LedgerColumnHeader,
   LedgerTableHeader,
@@ -52,6 +53,8 @@ export default function MainsPage() {
   const [previewFileType, setPreviewFileType] = useState<string | null>(null);
   const [showAdditionalColumns, setShowAdditionalColumns] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showTransactionPanel, setShowTransactionPanel] = useState(false);
+  const [transactionPanelClosing, setTransactionPanelClosing] = useState(false);
 
 
   useEffect(() => {
@@ -298,10 +301,17 @@ export default function MainsPage() {
 
   return (
     <div className="min-h-full flex flex-col">
-      <div className="bg-gradient-to-r from-[#7B0F2B] via-[#8B1535] to-[#A4163A] text-white px-6 py-5 flex items-center justify-between shrink-0 border-b border-[#6A0D25]/30">
+      <div className="sticky top-0 z-20 shrink-0 bg-gradient-to-r from-[#7B0F2B] via-[#8B1535] to-[#A4163A] text-white px-6 py-5 flex items-center justify-between border-b border-[#6A0D25]/30">
         <div>
           <h1 className="text-lg font-semibold tracking-wide">Mains Ledger</h1>
         </div>
+        <button
+          onClick={() => setShowTransactionPanel(true)}
+          className="flex items-center gap-2 px-4 py-2 rounded-md bg-white/20 hover:bg-white/30 text-white font-medium text-sm transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          New Transaction
+        </button>
       </div>
 
 
@@ -487,6 +497,20 @@ export default function MainsPage() {
           setSelectedOwnerId(String(owner.id));
           setMainSearchQuery(owner.name);
         }}
+      />
+
+      <TransactionSidePanel
+        open={showTransactionPanel}
+        closing={transactionPanelClosing}
+        onClose={() => {
+          setTransactionPanelClosing(true);
+          setTimeout(() => {
+            setShowTransactionPanel(false);
+            setTransactionPanelClosing(false);
+          }, 350);
+        }}
+        prefillFromOwnerId={selectedOwnerId ? parseInt(selectedOwnerId, 10) : null}
+        onTransactionSuccess={fetchTransactions}
       />
     </div>
   );

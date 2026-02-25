@@ -37,6 +37,7 @@ import {
   UsersRound,
   Sliders,
   Building2,
+  ScrollText,
 } from "lucide-react";
 import { NavSearchModal } from "./NavSearchModal";
 import { cn } from "@/lib/utils";
@@ -696,6 +697,9 @@ export default function SuperAdminSidebar({ user, onLogout }: SuperAdminSidebarP
                 )}
               </div>
 
+              {/* Accountant Log */}
+              {navItem("/super/accountant/activity-log", "Accountant Log", <ScrollText className="w-3.5 h-3.5" />)}
+
             </div>
           </div>
         )}
@@ -799,6 +803,20 @@ export default function SuperAdminSidebar({ user, onLogout }: SuperAdminSidebarP
                 <Wrench className="w-5 h-5" />
               </button>
             </CollapsedSubmenuPopover>
+
+            {/* Accountant Log */}
+            <Link
+              href="/super/accountant/activity-log"
+              className={cn(
+                "flex items-center justify-center p-2.5 rounded-lg",
+                isActive(pathname, "/super/accountant/activity-log")
+                  ? "bg-white/20 text-white"
+                  : "text-white/70 hover:bg-white/10"
+              )}
+              title="Accountant Log"
+            >
+              <ScrollText className="w-5 h-5" />
+            </Link>
 
           </div>
         )}
