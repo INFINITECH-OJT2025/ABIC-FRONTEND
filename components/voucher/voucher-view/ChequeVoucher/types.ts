@@ -9,10 +9,12 @@ export interface PrintableData {
   owner: string;
   receivedBy: string;
   approvedBy: string;
-    receivedFromSignature?: string;
+  receivedFromSignature?: string;
   approvedBySignature?: string;
   checkDate?: string;
   checkNo?: string;
   accountName?: string;
   accountNumber?: string;
+  receivedFromDate?: string;
+  approvedByDate?: string;
 }

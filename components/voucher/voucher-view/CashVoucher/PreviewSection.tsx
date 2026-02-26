@@ -45,7 +45,7 @@ function PreviewSection({ formData }: PreviewSectionProps) {
           {/* LEFT SIDE - PAID TO */}
           <div className="flex items-center gap-2">
             <span className="font-semibold">Paid to:</span>
-            <span className="border-b border-black w-40 h-5 overflow-hidden whitespace-nowrap">
+            <span className="border-b border-black inline-block w-fit min-w-[160px] max-w-[520px] h-5 overflow-hidden whitespace-nowrap">
               {formData.paidTo || ""}
             </span>
           </div>
@@ -125,7 +125,7 @@ function PreviewSection({ formData }: PreviewSectionProps) {
             <span className="font-semibold text-sm min-w-[130px]">
               PROJECT DETAILS :
             </span>
-            <span className="border-b border-black w-64 h-5 overflow-hidden whitespace-nowrap">
+            <span className="border-b border-black inline-block w-fit min-w-[240px] max-w-[520px] h-5 overflow-hidden whitespace-nowrap">
               {formData.projectDetails || ""}
             </span>
           </div>
@@ -134,7 +134,7 @@ function PreviewSection({ formData }: PreviewSectionProps) {
             <span className="font-semibold text-sm min-w-[130px]">
               OWNER/CLIENT :
             </span>
-            <span className="border-b border-black w-64 h-5 overflow-hidden whitespace-nowrap">
+            <span className="border-b border-black inline-block w-fit min-w-[240px] max-w-[520px] h-5 overflow-hidden whitespace-nowrap">
               {formData.owner || ""}
             </span>
           </div>
@@ -164,7 +164,9 @@ function PreviewSection({ formData }: PreviewSectionProps) {
               </div>
 
               <div className="flex flex-col items-center">
-                <span className="border-b border-black w-24 h-6 text-center whitespace-nowrap"></span>
+                <span className="border-b border-black w-24 h-6 text-center whitespace-nowrap">
+                  {formData.receivedFromDate || ""}
+                </span>
                 <span className="text-[10px] mt-1">DATE</span>
               </div>
             </div>
@@ -195,7 +197,9 @@ function PreviewSection({ formData }: PreviewSectionProps) {
               </div>
 
               <div className="flex flex-col items-center">
-                <span className="border-b border-black w-24 h-6 text-center whitespace-nowrap"></span>
+                <span className="border-b border-black w-24 h-6 text-center whitespace-nowrap">
+                  {formData.approvedByDate || ""}
+                </span>
                 <span className="text-[10px] mt-1">DATE</span>
               </div>
             </div>
