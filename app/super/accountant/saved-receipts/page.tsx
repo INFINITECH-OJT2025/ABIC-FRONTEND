@@ -1,10 +1,17 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { FileText, RotateCcw, Search, Receipt, Users } from "lucide-react";
+import { FileText, Search, Receipt } from "lucide-react";
 import { ReceiptCardSkeleton } from "@/components/accountant/saved-receipts/ReceiptCardSkeleton";
 import { ImagePreviewPanel } from "@/components/accountant/ledger";
 import { OwnerSearchableDropdown, type Owner } from "@/components/accountant/transaction";
+import {
+  MaintenancePageLayout,
+  MaintenanceFilterCard,
+  MaintenanceSectionCard,
+  MaintenanceEmptyState,
+  MaintenancePagination,
+} from "@/components/accountant/maintenance";
 
 interface SavedReceipt {
   id: number;
@@ -198,60 +205,24 @@ export default function SavedReceiptsPage() {
     "w-full rounded-xl border border-gray-200 px-4 py-2.5 h-10 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all";
 
   return (
-    <div className="min-h-full flex flex-col bg-gray-50/80">
+    <MaintenancePageLayout
+      header={{
+        icon: Receipt,
+        title: "Transaction Receipts",
+        subtitle: "Search and view saved transaction receipts",
+      }}
+    >
       <div className="flex-1 min-h-0 flex flex-col">
-        {/* Sticky: Header + Filter Card */}
         <div className="sticky top-0 z-20 bg-gray-50 shrink-0 pb-6 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)]">
-          {/* Hero Header */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white px-6 py-8">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50" />
-            <div className="relative flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center border border-white/20">
-                <Receipt className="w-7 h-7 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight">Transaction Receipts</h1>
-                <p className="text-white/80 text-sm mt-0.5">Search and view saved transaction receipts</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Filter Card - sticky with header */}
           <div className="px-4 sm:px-6 lg:px-8 mt-6">
-            <section className="rounded-2xl bg-white shadow-sm border border-gray-100 overflow-visible">
-              <div className="p-6 bg-gray-50/50 border-b border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-lg font-bold text-gray-900">Filters</h2>
-                <p className="text-xs text-gray-500">Apply filters to search receipts</p>
-              </div>
-              <div className="flex items-center gap-3">
-                {hasFilters && (
-                  <span className="text-xs font-semibold text-[#7B0F2B] bg-[#7B0F2B]/10 px-3 py-1 rounded-full">
-                    Filters Active
-                  </span>
-                )}
-
-                {hasFilters && (
-                  <button
-                    onClick={handleResetFilters}
-                    className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                    Reset
-                  </button>
-                )}
-
-                <button
-                  onClick={() => setFiltersOpen(!filtersOpen)}
-                  className="px-4 py-2 text-sm font-semibold text-white bg-[#7B0F2B] rounded-xl hover:bg-[#8B1535] transition-colors"
-                >
-                  {filtersOpen ? "Hide Filters" : "Show Filters"}
-                </button>
-              </div>
-            </div>
-
-            {filtersOpen && (
+            <MaintenanceFilterCard
+              title="Filters"
+              description="Apply filters to search receipts"
+              hasFilters={hasFilters}
+              onReset={handleResetFilters}
+              filtersOpen={filtersOpen}
+              onToggleFilters={() => setFiltersOpen(!filtersOpen)}
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div className="flex flex-col">
                   <OwnerSearchableDropdown
@@ -324,15 +295,12 @@ export default function SavedReceiptsPage() {
                   />
                 </div>
               </div>
-            )}
-              </div>
-            </section>
+            </MaintenanceFilterCard>
           </div>
         </div>
 
-        {/* Content - scrollable */}
         <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 mt-6 pb-6">
-          <section className="rounded-2xl bg-white shadow-sm border border-gray-100 overflow-hidden">
+          <MaintenanceSectionCard>
             <div className="p-6">
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -390,55 +358,34 @@ export default function SavedReceiptsPage() {
                   ))}
                 </div>
                 {pagination && pagination.last_page > 1 && (
-                  <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
-                    <p className="text-sm text-gray-600">
-                      Showing {pagination.from} to {pagination.to} of {pagination.total} receipts
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                        disabled={currentPage <= 1}
-                        className="px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7B0F2B]/5 hover:border-[#7B0F2B]/30 transition-all"
-                      >
-                        Previous
-                      </button>
-                      <span className="text-sm text-gray-600">
-                        Page {currentPage} of {pagination.last_page}
-                      </span>
-                      <button
-                        onClick={() => setCurrentPage((p) => Math.min(pagination.last_page, p + 1))}
-                        disabled={currentPage >= pagination.last_page}
-                        className="px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7B0F2B]/5 hover:border-[#7B0F2B]/30 transition-all"
-                      >
-                        Next
-                      </button>
-                    </div>
-                  </div>
+                  <MaintenancePagination
+                    paginationMeta={{
+                      ...pagination,
+                      from: pagination.from ?? 0,
+                      to: pagination.to ?? 0,
+                    }}
+                    currentPage={currentPage}
+                    setCurrentPage={setCurrentPage}
+                    itemName="receipts"
+                    variant="simple"
+                  />
                 )}
               </>
             ) : hasFilters ? (
-              <div className="flex flex-col items-center justify-center py-16 px-4 rounded-2xl bg-gray-50/80 border-2 border-dashed border-gray-200">
-                <div className="w-16 h-16 rounded-2xl bg-[#7B0F2B]/10 flex items-center justify-center mb-4">
-                  <Search className="w-8 h-8 text-[#7B0F2B]" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No receipts found</h3>
-                <p className="text-sm text-gray-500 text-center max-w-md">
-                  No receipts match your current filters. Try adjusting your search criteria.
-                </p>
-              </div>
+              <MaintenanceEmptyState
+                icon={Search}
+                title="No receipts found"
+                description="No receipts match your current filters. Try adjusting your search criteria."
+              />
             ) : (
-              <div className="flex flex-col items-center justify-center py-16 px-4 rounded-2xl bg-gray-50/80 border-2 border-dashed border-gray-200">
-                <div className="w-16 h-16 rounded-2xl bg-[#7B0F2B]/10 flex items-center justify-center mb-4">
-                  <Receipt className="w-8 h-8 text-[#7B0F2B]" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No filters applied</h3>
-                <p className="text-sm text-gray-500 text-center max-w-md">
-                  Apply filters above to search for transaction receipts. Filter by owner, voucher number, date range, or transaction type.
-                </p>
-              </div>
+              <MaintenanceEmptyState
+                icon={Receipt}
+                title="No filters applied"
+                description="Apply filters above to search for transaction receipts. Filter by owner, voucher number, date range, or transaction type."
+              />
             )}
             </div>
-          </section>
+          </MaintenanceSectionCard>
         </div>
       </div>
 
@@ -460,6 +407,6 @@ export default function SavedReceiptsPage() {
         fileType={selectedReceipt?.file_type || null}
         attachmentUrl={selectedReceipt?.file_url || null}
       />
-    </div>
+    </MaintenancePageLayout>
   );
 }

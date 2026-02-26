@@ -2,11 +2,19 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Search, X, Inbox, Plus, Eye, Banknote, ChevronDown } from "lucide-react";
+import { Search, X, Inbox, Plus, Eye, Banknote } from "lucide-react";
 import SuccessModal from "@/components/ui/SuccessModal";
 import LoadingModal from "@/components/ui/LoadingModal";
 import FailModal from "@/components/ui/FailModal";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import {
+  MaintenancePageLayout,
+  MaintenanceSectionCard,
+  MaintenanceEmptyState,
+  MaintenancePagination,
+  MaintenanceRefreshButton,
+  MaintenanceFilterCard,
+} from "@/components/accountant/maintenance";
 
 type AccountStatus = "ACTIVE" | "INACTIVE" ;
 type AccountType = "BANK" | "GCASH" | "CASH" | "INTERNAL";
@@ -71,137 +79,45 @@ const EyeIcon = (props: any) => (
   </svg>
 );
 
-// Reusable Pagination Component
-const Pagination = ({
-  paginationMeta,
-  currentPage,
-  setCurrentPage,
-  itemName = "items",
-}: {
-  paginationMeta: {
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
-    from: number;
-    to: number;
-  } | null;
-  currentPage: number;
-  setCurrentPage: (page: number | ((p: number) => number)) => void;
-  itemName?: string;
-}) => {
-  if (!paginationMeta || paginationMeta.total === 0) return null;
-
-  return (
-    <div className="flex items-center justify-between py-3 border-b border-gray-100">
-      <div className="text-sm text-neutral-600">
-        Showing {paginationMeta.from} to {paginationMeta.to} of {paginationMeta.total} {itemName}
-      </div>
-      {paginationMeta.last_page > 1 && (
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={paginationMeta.current_page === 1}
-            className="px-3 py-1.5 rounded-xl text-sm font-medium border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7B0F2B]/5 hover:border-[#7B0F2B]/30 transition-all"
-          >
-            Previous
-          </button>
-          <div className="flex items-center gap-1">
-            {[...Array(paginationMeta.last_page)].map((_, i) => {
-              const page = i + 1;
-              if (page === 1 || page === paginationMeta.last_page || (page >= paginationMeta.current_page - 1 && page <= paginationMeta.current_page + 1)) {
-                return (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all ${
-                      paginationMeta.current_page === page ? "bg-[#7B0F2B] text-white" : "border border-gray-200 hover:bg-gray-50"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                );
-              } else if (page === paginationMeta.current_page - 2 || page === paginationMeta.current_page + 2) {
-                return <span key={page} className="px-2 text-neutral-500">...</span>;
-              }
-              return null;
-            })}
-          </div>
-          <button
-            onClick={() => setCurrentPage((p) => Math.min(paginationMeta.last_page, p + 1))}
-            disabled={paginationMeta.current_page === paginationMeta.last_page}
-            className="px-3 py-1.5 rounded-xl text-sm font-medium border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7B0F2B]/5 hover:border-[#7B0F2B]/30 transition-all"
-          >
-            Next
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
-
 // Skeleton Components
-const BankAccountCardSkeleton = () => (
-  <div className="rounded-xl bg-white border border-gray-100 shadow-sm p-4">
-    <div className="animate-pulse">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3 flex-1">
-          <div className="w-10 h-10 bg-gray-200 rounded-xl" />
-          <div className="flex-1">
-            <div className="h-4 bg-gray-200 w-3/4 mb-2 rounded" />
-            <div className="h-3 bg-gray-200 w-1/2 rounded" />
-          </div>
-        </div>
-        <div className="h-5 bg-gray-200 w-16 rounded" />
-      </div>
-      <div className="flex items-center justify-between">
-        <div className="h-3 bg-gray-200 w-24 rounded" />
-        <div className="h-8 bg-gray-200 w-20 rounded-xl" />
-      </div>
-    </div>
-  </div>
-);
-
 const BankAccountTableSkeleton = () => (
   <div>
-    <div className="rounded-xl border border-gray-100 bg-gray-50/50 px-4 py-0 mb-3">
+    <div className="rounded-xl border border-gray-100 bg-gray-50/50 px-4 py-3 mb-3 animate-pulse">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4 flex-1 min-w-0">
-          <div className="w-12 h-12 shrink-0"></div>
-          <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-5 gap-2 text-sm font-bold text-neutral-900">
-            <div>Account Name</div>
-            <div>Owner</div>
-            <div>Bank</div>
-            <div>Account Number</div>
-            <div>Type</div>
+          <div className="w-12 h-12 bg-gray-200 rounded-xl shrink-0" />
+          <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-5 gap-2">
+            {[1, 2, 3, 4, 5].map((j) => (
+              <div key={j} className="h-4 bg-gray-200 rounded w-16" />
+            ))}
           </div>
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          <div className="text-sm font-bold text-neutral-900 w-24">Balance</div>
-          <div className="text-sm font-bold text-neutral-900 w-20">Status</div>
-          <div className="w-20"></div>
+          <div className="h-4 bg-gray-200 rounded w-16" />
+          <div className="h-4 bg-gray-200 rounded w-14" />
+          <div className="w-20" />
         </div>
       </div>
     </div>
     <div className="space-y-3">
       {[...Array(5)].map((_, i) => (
-        <div key={i} className="rounded-xl bg-white border border-gray-100 shadow-sm p-4">
+        <div key={i} className="rounded-xl bg-white border border-gray-100 shadow-sm p-4 animate-pulse">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4 flex-1 min-w-0">
-              <div className="w-12 h-12 bg-gray-200 rounded-xl animate-pulse" />
+              <div className="w-12 h-12 bg-gray-200 rounded-xl shrink-0" />
               <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-5 gap-2">
-                {[...Array(5)].map((_, j) => (
+                {[1, 2, 3, 4, 5].map((j) => (
                   <div key={j}>
-                    <div className="h-4 bg-gray-200 w-3/4 mb-1 animate-pulse rounded" />
-                    <div className="h-3 bg-gray-200 w-16 animate-pulse rounded" />
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-1" />
+                    <div className="h-3 bg-gray-200 rounded w-12" />
                   </div>
                 ))}
               </div>
             </div>
             <div className="flex items-center gap-3 shrink-0">
-              <div className="h-4 bg-gray-200 w-20 animate-pulse rounded" />
-              <div className="h-8 bg-gray-200 w-16 animate-pulse rounded-xl" />
-              <div className="h-8 bg-gray-200 w-20 animate-pulse rounded-xl" />
+              <div className="h-4 bg-gray-200 rounded w-16" />
+              <div className="h-7 bg-gray-200 rounded-xl w-16" />
+              <div className="h-8 bg-gray-200 rounded-xl w-16" />
             </div>
           </div>
         </div>
@@ -211,12 +127,12 @@ const BankAccountTableSkeleton = () => (
 );
 
 const BankAccountDetailSkeleton = () => (
-  <div className="animate-pulse space-y-6">
+  <div className="animate-pulse">
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {[...Array(8)].map((_, i) => (
         <div key={i}>
-          <div className="h-3 bg-gray-200 rounded w-24 mb-2"></div>
-          <div className="h-10 bg-gray-200 rounded"></div>
+          <div className="h-4 bg-gray-200 rounded w-24 mb-2" />
+          <div className="h-10 bg-gray-100 rounded-xl" />
         </div>
       ))}
     </div>
@@ -263,6 +179,7 @@ export default function BankAccountsPage() {
   const [savingAccount, setSavingAccount] = useState(false);
   const [showSaveLoading, setShowSaveLoading] = useState(false);
   const [showCreateAccountConfirm, setShowCreateAccountConfirm] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(true);
 
   // Owners and Banks for dropdowns
   const [owners, setOwners] = useState<Owner[]>([]);
@@ -420,13 +337,6 @@ export default function BankAccountsPage() {
         owner.owner_type?.toLowerCase().includes(q)
     );
   }, [owners, ownerSearchQuery]);
-
-  const summaryStats = useMemo(() => {
-    const total = paginationMeta?.total ?? bankAccounts.length;
-    const active = bankAccounts.filter((a) => (a.status ?? "ACTIVE").toString().toUpperCase() === "ACTIVE").length;
-    const inactive = bankAccounts.filter((a) => (a.status ?? "ACTIVE").toString().toUpperCase() === "INACTIVE").length;
-    return { total, active, inactive };
-  }, [bankAccounts, paginationMeta]);
 
   const filteredBanks = useMemo(() => {
     if (!bankSearchQuery.trim()) {
@@ -732,21 +642,32 @@ export default function BankAccountsPage() {
     }
   }, [detailFormData.bank_id, banks, detailDrawerOpen]);
 
+  const hasFilters =
+    searchQuery.trim() !== "" ||
+    statusFilter !== "ALL" ||
+    accountTypeFilter !== "ALL" ||
+    sortBy !== "date" ||
+    sortOrder !== "desc";
+
+  const handleResetFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("ALL");
+    setAccountTypeFilter("ALL");
+    setSortBy("date");
+    setSortOrder("desc");
+    setCurrentPage(1);
+  };
+
+  const inputClass =
+    "w-full rounded-xl border border-gray-200 px-4 py-2.5 h-10 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all";
+
   return (
-    <div className="min-h-full flex flex-col bg-gray-50/80">
-      <div className="sticky top-0 z-20 bg-gray-50/80">
-        <div className="relative overflow-hidden bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white px-6 py-8">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50" />
-        <div className="relative flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center border border-white/20">
-              <Banknote className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">Bank Accounts</h1>
-              <p className="text-white/80 text-sm mt-0.5">Manage bank accounts and their opening balances</p>
-            </div>
-          </div>
+    <MaintenancePageLayout
+      header={{
+        icon: Banknote,
+        title: "Bank Accounts",
+        subtitle: "Manage bank accounts and their opening balances",
+        primaryAction: (
           <button
             onClick={() => setShowCreatePanel(true)}
             className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold bg-white text-[#7B0F2B] hover:bg-white/95 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
@@ -754,202 +675,123 @@ export default function BankAccountsPage() {
             <Plus className="w-4 h-4" />
             Create Bank Account
           </button>
-        </div>
-        </div>
-      </div>
-
-      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-8 -mt-4">
-        <section className="rounded-2xl bg-white p-5 shadow-sm border border-gray-100 overflow-hidden">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">Bank Accounts</h2>
-              <p className="text-sm text-gray-600 mt-1">Manage bank accounts and their opening balances</p>
-            </div>
+        ),
+      }}
+    >
+      <div className="flex-1 min-h-0 flex flex-col">
+        <div className="sticky top-0 z-20 bg-gray-50 shrink-0 pb-6 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)]">
+          <div className="px-4 sm:px-6 lg:px-8 mt-6">
+            <MaintenanceFilterCard
+              title="Filters"
+              description="Search and filter bank accounts"
+              hasFilters={hasFilters}
+              onReset={handleResetFilters}
+              filtersOpen={filtersOpen}
+              onToggleFilters={() => setFiltersOpen(!filtersOpen)}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className="flex flex-col">
+                  <label className="block text-sm font-medium mb-2 text-gray-900">Status</label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
+                    className={inputClass}
+                  >
+                    <option value="ALL">All</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="INACTIVE">Inactive</option>
+                  </select>
+                </div>
+                <div className="flex flex-col">
+                  <label className="block text-sm font-medium mb-2 text-gray-900">Account Type</label>
+                  <select
+                    value={accountTypeFilter}
+                    onChange={(e) => setAccountTypeFilter(e.target.value as typeof accountTypeFilter)}
+                    className={inputClass}
+                  >
+                    <option value="ALL">All</option>
+                    <option value="BANK">Bank</option>
+                    <option value="GCASH">GCash</option>
+                    <option value="CASH">Cash</option>
+                    <option value="INTERNAL">Internal</option>
+                  </select>
+                </div>
+                <div className="flex flex-col">
+                  <label className="block text-sm font-medium mb-2 text-gray-900">Search</label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Account name, number, holder..."
+                      className="w-full rounded-xl border border-gray-200 pl-10 pr-10 py-2.5 h-10 text-sm focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] outline-none transition-all"
+                    />
+                    {searchQuery && (
+                      <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#7B0F2B]">
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-col">
+                  <label className="block text-sm font-medium mb-2 text-gray-900">Sort</label>
+                  <select
+                    value={`${sortBy}-${sortOrder}`}
+                    onChange={(e) => {
+                      const [newSortBy, newSortOrder] = e.target.value.split("-") as [typeof sortBy, typeof sortOrder];
+                      setSortBy(newSortBy);
+                      setSortOrder(newSortOrder);
+                    }}
+                    className={inputClass}
+                  >
+                    <option value="date-desc">Date (Newest First)</option>
+                    <option value="date-asc">Date (Oldest First)</option>
+                    <option value="name-asc">Name (A-Z)</option>
+                    <option value="name-desc">Name (Z-A)</option>
+                  </select>
+                </div>
+                <div className="flex flex-col justify-end">
+                  <MaintenanceRefreshButton onClick={fetchBankAccounts} title="Refresh list" />
+                </div>
+              </div>
+            </MaintenanceFilterCard>
           </div>
-          {/* Summary Stats - Card row */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
-            <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-[#7B0F2B]/10 flex items-center justify-center">
-                  <Banknote className="w-5 h-5 text-[#7B0F2B]" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">{summaryStats.total}</div>
-                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Total</div>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl p-4 border border-emerald-100 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-emerald-700">{summaryStats.active}</div>
-                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Active</div>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                  <div className="w-2 h-2 rounded-full bg-gray-500" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-gray-700">{summaryStats.inactive}</div>
-                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Inactive</div>
-                </div>
-              </div>
-            </div>
-          </div>
+        </div>
 
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mt-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Status:</span>
-              <button
-                onClick={() => setStatusFilter("ALL")}
-                className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
-                  statusFilter === "ALL"
-                    ? "bg-[#7B0F2B] text-white"
-                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => setStatusFilter("ACTIVE")}
-                className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
-                  statusFilter === "ACTIVE"
-                    ? "bg-[#7B0F2B] text-white"
-                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                Active
-              </button>
-              <button
-                onClick={() => setStatusFilter("INACTIVE")}
-                className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
-                  statusFilter === "INACTIVE"
-                    ? "bg-[#7B0F2B] text-white"
-                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                Inactive
-              </button>
-              <span className="text-sm font-medium text-gray-700 ml-2">Type:</span>
-              <button
-                onClick={() => setAccountTypeFilter("ALL")}
-                className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
-                  accountTypeFilter === "ALL"
-                    ? "bg-[#7B0F2B] text-white"
-                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => setAccountTypeFilter("BANK")}
-                className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
-                  accountTypeFilter === "BANK"
-                    ? "bg-[#7B0F2B] text-white"
-                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                Bank
-              </button>
-              <button
-                onClick={() => setAccountTypeFilter("GCASH")}
-                className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
-                  accountTypeFilter === "GCASH"
-                    ? "bg-[#7B0F2B] text-white"
-                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                GCash
-              </button>
-              <button
-                onClick={() => setAccountTypeFilter("CASH")}
-                className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
-                  accountTypeFilter === "CASH"
-                    ? "bg-[#7B0F2B] text-white"
-                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                Cash
-              </button>
-              <button
-                onClick={() => setAccountTypeFilter("INTERNAL")}
-                className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
-                  accountTypeFilter === "INTERNAL"
-                    ? "bg-[#7B0F2B] text-white"
-                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                Internal
-              </button>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                onClick={() => fetchBankAccounts()}
-                className="p-2.5 rounded-xl border border-gray-200 hover:bg-[#7B0F2B]/5 hover:border-[#7B0F2B]/30 transition-colors"
-                title="Refresh"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M4 12a8 8 0 0 1 14.9-3M20 12a8 8 0 0 1-14.9 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M18 5v4h-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M6 19v-4h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </button>
-              <div className="relative w-full md:w-80">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
-                <input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by account name, number, holder..."
-                  className="w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 py-2.5 h-10 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 mt-6 pb-6">
+          <MaintenanceSectionCard>
+            <div className="p-6">
+
+
+            {paginationMeta && (
+              <div className="mt-6">
+                <MaintenancePagination
+                  paginationMeta={paginationMeta}
+                  currentPage={currentPage}
+                  setCurrentPage={setCurrentPage}
+                  itemName="accounts"
                 />
               </div>
+            )}
 
-              {/* Sort Dropdown */}
-              <div className="relative">
-                <select
-                  value={`${sortBy}-${sortOrder}`}
-                  onChange={(e) => {
-                    const [newSortBy, newSortOrder] = e.target.value.split('-') as [typeof sortBy, typeof sortOrder];
-                    setSortBy(newSortBy);
-                    setSortOrder(newSortOrder);
-                  }}
-                  className="appearance-none rounded-xl border border-gray-200 bg-white px-4 py-2.5 pr-8 h-10 text-sm outline-none cursor-pointer focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
-                >
-                  <option value="date-desc">Date Promoted (Newest First)</option>
-                  <option value="date-asc">Date Promoted (Oldest First)</option>
-                  <option value="name-asc">Name (A-Z)</option>
-                  <option value="name-desc">Name (Z-A)</option>
-                </select>
-                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none" />
-              </div>
-            </div>
-          </div>
-
-          {/* Pagination at the top */}
-          {paginationMeta && (
-            <Pagination
-              paginationMeta={paginationMeta}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              itemName="accounts"
-            />
-          )}
-
-          <div className="mt-4">
+            <div className="mt-6">
             {loading ? (
               <BankAccountTableSkeleton />
             ) : bankAccounts.length === 0 ? (
-              <div className="px-4 py-10 flex flex-col items-center justify-center text-center">
-                <Inbox className="w-16 h-16 text-gray-300 mx-auto mb-4" aria-hidden />
-                <div className="text-3xl font-bold text-[#5f0c18]">No data</div>
-                <div className="mt-2 text-xs text-neutral-800">Create a bank account or adjust your search.</div>
-              </div>
+              <MaintenanceEmptyState
+                icon={Inbox}
+                title="No data"
+                description="Create a bank account or adjust your search."
+                action={
+                  <button
+                    onClick={() => setShowCreatePanel(true)}
+                    className="px-5 py-2.5 bg-[#7B0F2B] text-white rounded-xl font-semibold hover:bg-[#8B1535] transition-colors inline-flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Create Bank Account
+                  </button>
+                }
+              />
             ) : (
               <div>
                 <div className="rounded-xl border border-gray-100 bg-gray-50/50 px-4 py-0 mb-3">
@@ -1032,7 +874,8 @@ className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semi
               </div>
             )}
           </div>
-        </section>
+          </div>
+        </MaintenanceSectionCard>
 
         {/* Create Panel - Full Height Side Panel */}
         {(showCreatePanel || createPanelClosing) && (
@@ -1766,6 +1609,7 @@ className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-
           }
         }
       `}</style>
-    </div>
+      </div>
+    </MaintenancePageLayout>
   );
 }

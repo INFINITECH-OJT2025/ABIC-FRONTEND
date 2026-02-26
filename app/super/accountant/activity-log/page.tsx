@@ -11,11 +11,17 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  RotateCcw,
   FileText,
   Activity,
   ScrollText,
 } from "lucide-react";
+import {
+  MaintenancePageLayout,
+  MaintenanceFilterCard,
+  MaintenanceSectionCard,
+  MaintenanceEmptyState,
+  MaintenancePagination,
+} from "@/components/accountant/maintenance";
 
 interface ActivityLogEntry {
   id: number;
@@ -204,60 +210,24 @@ export default function ActivityLogPage() {
   };
 
   return (
-    <div className="min-h-full flex flex-col bg-gray-50/80">
+    <MaintenancePageLayout
+      header={{
+        icon: ScrollText,
+        title: "Accountant Log",
+        subtitle: "Activity logs across transactions, owners, and units",
+      }}
+    >
       <div className="flex-1 min-h-0 flex flex-col">
-        {/* Sticky: Header + Filter Card */}
         <div className="sticky top-0 z-20 bg-gray-50 shrink-0 pb-6 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)]">
-          {/* Hero Header */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white px-6 py-8">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50" />
-            <div className="relative flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center border border-white/20">
-                <ScrollText className="w-7 h-7 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight">Accountant Log</h1>
-                <p className="text-white/80 text-sm mt-0.5">Activity logs across transactions, owners, and units</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Filter Card - sticky with header */}
           <div className="px-4 sm:px-6 lg:px-8 mt-6">
-            <section className="rounded-2xl bg-white shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-6 bg-gray-50/50 border-b border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-lg font-bold text-gray-900">Activity Logs</h2>
-                <p className="text-xs text-gray-500">Filter and view system activity</p>
-              </div>
-              <div className="flex items-center gap-3">
-                {hasFilters && (
-                  <span className="text-xs font-semibold text-[#7B0F2B] bg-[#7B0F2B]/10 px-3 py-1 rounded-full">
-                    Filters Active
-                  </span>
-                )}
-
-                {hasFilters && (
-                  <button
-                    onClick={handleReset}
-                    className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                    Reset
-                  </button>
-                )}
-
-                <button
-                  onClick={() => setFiltersOpen(!filtersOpen)}
-                  className="px-4 py-2 text-sm font-semibold text-white bg-[#7B0F2B] rounded-xl hover:bg-[#8B1535] transition-colors"
-                >
-                  {filtersOpen ? "Hide Filters" : "Show Filters"}
-                </button>
-              </div>
-            </div>
-
-            {filtersOpen && (
+            <MaintenanceFilterCard
+              title="Activity Logs"
+              description="Filter and view system activity"
+              hasFilters={hasFilters}
+              onReset={handleReset}
+              filtersOpen={filtersOpen}
+              onToggleFilters={() => setFiltersOpen(!filtersOpen)}
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div className="flex flex-col">
                   <label className="block text-sm font-medium mb-2 text-gray-900">Activity Type</label>
@@ -318,15 +288,12 @@ export default function ActivityLogPage() {
                   />
                 </div>
               </div>
-            )}
-              </div>
-            </section>
+            </MaintenanceFilterCard>
           </div>
         </div>
 
-        {/* Content - scrollable */}
         <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 mt-6 pb-6">
-          <section className="rounded-2xl bg-white shadow-sm border border-gray-100 overflow-hidden">
+          <MaintenanceSectionCard>
             <div className="divide-y divide-gray-100">
             {loading ? (
               <div className="p-8 space-y-4">
@@ -379,50 +346,36 @@ export default function ActivityLogPage() {
                 </div>
               ))
             ) : (
-              <div className="flex flex-col items-center justify-center py-16 px-4">
-                <div className="w-16 h-16 rounded-2xl bg-[#7B0F2B]/10 flex items-center justify-center mb-4">
-                  <Activity className="w-8 h-8 text-[#7B0F2B]" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No activity logs found</h3>
-                <p className="text-sm text-gray-500 text-center max-w-md">
-                  {hasFilters
+              <MaintenanceEmptyState
+                icon={Activity}
+                title="No activity logs found"
+                description={
+                  hasFilters
                     ? "No logs match your current filters. Try adjusting your search criteria."
-                    : "Activity logs will appear here when transactions, owners, or units are created or updated."}
-                </p>
-              </div>
+                    : "Activity logs will appear here when transactions, owners, or units are created or updated."
+                }
+              />
             )}
             </div>
 
-            {/* Pagination */}
-          {pagination && pagination.last_page > 1 && logs.length > 0 && (
-            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50">
-              <p className="text-sm text-gray-600">
-                Showing {pagination.from} to {pagination.to} of {pagination.total} entries
-              </p>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage <= 1}
-                  className="px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7B0F2B]/5 hover:border-[#7B0F2B]/30 transition-all"
-                >
-                  Previous
-                </button>
-                <span className="text-sm text-gray-600">
-                  Page {currentPage} of {pagination.last_page}
-                </span>
-                <button
-                  onClick={() => setCurrentPage((p) => Math.min(pagination.last_page, p + 1))}
-                  disabled={currentPage >= pagination.last_page}
-                  className="px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7B0F2B]/5 hover:border-[#7B0F2B]/30 transition-all"
-                >
-                  Next
-                </button>
+            {pagination && pagination.last_page > 1 && logs.length > 0 && (
+              <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+                <MaintenancePagination
+                  paginationMeta={{
+                    ...pagination,
+                    from: pagination.from ?? 0,
+                    to: pagination.to ?? 0,
+                  }}
+                  currentPage={currentPage}
+                  setCurrentPage={setCurrentPage}
+                  itemName="entries"
+                  variant="simple"
+                />
               </div>
-            </div>
-          )}
-          </section>
+            )}
+          </MaintenanceSectionCard>
         </div>
       </div>
-    </div>
+    </MaintenancePageLayout>
   );
 }
