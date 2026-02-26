@@ -255,6 +255,8 @@ export default function SuperAdminSidebar({ user, onLogout }: SuperAdminSidebarP
   const [attendanceExpanded, setAttendanceExpanded] = useState(isActive(pathname, "/super/admin/attendance"));
   const [headExpanded, setHeadExpanded] = useState(isActive(pathname, "/super/head"));
   const [accountantTransactionsExpanded, setAccountantTransactionsExpanded] = useState(isActive(pathname, "/super/accountant/transactions"));
+  const [accountantVoucherExpanded, setAccountantVoucherExpanded] = useState(isActive(pathname, "/super/accountant/voucher"));
+  const [accountantVoucherListExpanded, setAccountantVoucherListExpanded] = useState(isActive(pathname, "/super/accountant/voucher-list"));
   const [accountantLedgerExpanded, setAccountantLedgerExpanded] = useState(isActive(pathname, "/super/accountant/ledger"));
   const [accountantBankLedgersExpanded, setAccountantBankLedgersExpanded] = useState(isActive(pathname, "/super/accountant/ledger/bank"));
   const [accountantCashLedgerExpanded, setAccountantCashLedgerExpanded] = useState(isActive(pathname, "/super/accountant/ledger/cash"));
@@ -638,6 +640,66 @@ export default function SuperAdminSidebar({ user, onLogout }: SuperAdminSidebarP
                 )}
               </div>
 
+              {/* Voucher */}
+              <div>
+                <button
+                  onClick={() => setAccountantVoucherExpanded(!accountantVoucherExpanded)}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10"
+                >
+                  <span className="flex items-center gap-3">
+                    <FileText className="w-5 h-5 text-white/70" />
+                    Voucher
+                  </span>
+                  <ChevronLeft
+                    className={cn("w-4 h-4 transition-transform text-white/70", accountantVoucherExpanded && "rotate-[-90deg]")}
+                  />
+                </button>
+                {accountantVoucherExpanded && (
+                  <div className="ml-4 mt-1 space-y-0.5 border-l border-white/20 pl-3">
+                    {navItem(
+                      "/super/accountant/voucher/cash-voucher",
+                      "Cash Voucher",
+                      <Coins className="w-3.5 h-3.5" />
+                    )}
+                    {navItem(
+                      "/super/accountant/voucher/cheque-voucher",
+                      "Cheque Voucher",
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Voucher List */}
+              <div>
+                <button
+                  onClick={() => setAccountantVoucherListExpanded(!accountantVoucherListExpanded)}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10"
+                >
+                  <span className="flex items-center gap-3">
+                    <ClipboardList className="w-5 h-5 text-white/70" />
+                    Voucher List
+                  </span>
+                  <ChevronLeft
+                    className={cn("w-4 h-4 transition-transform text-white/70", accountantVoucherListExpanded && "rotate-[-90deg]")}
+                  />
+                </button>
+                {accountantVoucherListExpanded && (
+                  <div className="ml-4 mt-1 space-y-0.5 border-l border-white/20 pl-3">
+                    {navItem(
+                      "/super/accountant/voucher-list/cash-voucher-list",
+                      "Cash Voucher List",
+                      <Coins className="w-3.5 h-3.5" />
+                    )}
+                    {navItem(
+                      "/super/accountant/voucher-list/cheque-voucher-list",
+                      "Cheque Voucher List",
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    )}
+                  </div>
+                )}
+              </div>
+
               {/* Ledger */}
               <div>
                 <button
@@ -729,6 +791,52 @@ export default function SuperAdminSidebar({ user, onLogout }: SuperAdminSidebarP
                 title="Transactions"
               >
                 <FileText className="w-5 h-5" />
+              </button>
+            </CollapsedSubmenuPopover>
+
+            {/* Voucher */}
+            <CollapsedSubmenuPopover
+              label="Voucher"
+              items={[
+                { href: "/super/accountant/voucher/cash-voucher", label: "Cash Voucher", icon: <Coins className="w-4 h-4" /> },
+                { href: "/super/accountant/voucher/cheque-voucher", label: "Cheque Voucher", icon: <CheckCircle2 className="w-4 h-4" /> },
+              ]}
+              pathname={pathname}
+            >
+              <button
+                onClick={() => router.push("/super/accountant/voucher/cash-voucher")}
+                className={cn(
+                  "w-full flex items-center justify-center p-2.5 rounded-lg",
+                  isActive(pathname, "/super/accountant/voucher")
+                    ? "bg-white/20 text-white"
+                    : "text-white/70 hover:bg-white/10"
+                )}
+                title="Voucher"
+              >
+                <FileText className="w-5 h-5" />
+              </button>
+            </CollapsedSubmenuPopover>
+
+            {/* Voucher List */}
+            <CollapsedSubmenuPopover
+              label="Voucher List"
+              items={[
+                { href: "/super/accountant/voucher-list/cash-voucher-list", label: "Cash Voucher List", icon: <Coins className="w-4 h-4" /> },
+                { href: "/super/accountant/voucher-list/cheque-voucher-list", label: "Cheque Voucher List", icon: <CheckCircle2 className="w-4 h-4" /> },
+              ]}
+              pathname={pathname}
+            >
+              <button
+                onClick={() => router.push("/super/accountant/voucher-list/cash-voucher-list")}
+                className={cn(
+                  "w-full flex items-center justify-center p-2.5 rounded-lg",
+                  isActive(pathname, "/super/accountant/voucher-list")
+                    ? "bg-white/20 text-white"
+                    : "text-white/70 hover:bg-white/10"
+                )}
+                title="Voucher List"
+              >
+                <ClipboardList className="w-5 h-5" />
               </button>
             </CollapsedSubmenuPopover>
 
