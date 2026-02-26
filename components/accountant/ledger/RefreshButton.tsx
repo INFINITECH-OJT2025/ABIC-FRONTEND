@@ -11,7 +11,7 @@ export function RefreshButton({ onClick, title = "Refresh" }: RefreshButtonProps
   return (
     <button
       onClick={onClick}
-      className="p-2 rounded-md border border-gray-200 hover:bg-gray-50 transition-all hover:border-[#7a0f1f]/40"
+      className="p-2.5 rounded-xl border border-gray-200 hover:bg-[#7B0F2B]/5 hover:border-[#7B0F2B]/30 transition-all"
       title={title}
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">

@@ -11,7 +11,7 @@ interface SortSelectorProps {
 export function SortSelector({ value, onChange }: SortSelectorProps) {
   return (
     <div className="flex items-center gap-2">
-      <div className="flex items-center gap-2 text-sm font-medium text-[#7a0f1f]">
+      <div className="flex items-center gap-2 text-sm font-medium text-[#7B0F2B]">
         <ArrowUpDown className="w-4 h-4" />
         <label>Sort</label>
       </div>
@@ -19,7 +19,7 @@ export function SortSelector({ value, onChange }: SortSelectorProps) {
         <select
           value={value}
           onChange={(e) => onChange(e.target.value as "newest" | "oldest")}
-          className="w-full h-10 rounded-md border border-gray-200 bg-white px-3 pr-10 text-sm transition-all hover:border-[#7a0f1f]/40 hover:bg-gray-50/50 focus:ring-2 focus:ring-[#7a0f1f]/20 focus:border-[#7a0f1f] focus:outline-none cursor-pointer appearance-none"
+          className="w-full h-10 rounded-xl border border-gray-200 bg-white px-3 pr-10 text-sm transition-all hover:border-[#7B0F2B]/40 hover:bg-gray-50/50 focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] focus:outline-none cursor-pointer appearance-none"
         >
           <option value="oldest">Date Created (Oldest First)</option>
           <option value="newest">Date Created (Newest First)</option>

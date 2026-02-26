@@ -12,7 +12,7 @@ interface LedgerColumnHeaderProps {
 
 export function LedgerColumnHeader({ accountLabel, showAdditionalColumns, endingBalance, openingBalance }: LedgerColumnHeaderProps) {
   return (
-    <div className="overflow-hidden bg-[#7a0f1f] sticky top-0 z-10 shadow-md rounded-t-md">
+    <div className="overflow-hidden bg-[#7B0F2B] sticky top-0 z-10 shadow-md rounded-t-2xl">
       <div className="px-4 py-4">
         <div className="flex items-center justify-between">
           

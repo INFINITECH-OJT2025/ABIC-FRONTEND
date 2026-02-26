@@ -734,8 +734,8 @@ export default function BankAccountsPage() {
 
   return (
     <div className="min-h-full flex flex-col bg-gray-50/80">
-      {/* Hero Header */}
-      <div className="sticky top-0 z-20 shrink-0 relative overflow-hidden bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white px-6 py-8">
+      <div className="sticky top-0 z-20 bg-gray-50/80">
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white px-6 py-8">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50" />
         <div className="relative flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -755,12 +755,19 @@ export default function BankAccountsPage() {
             Create Bank Account
           </button>
         </div>
+        </div>
       </div>
 
       <div className="flex-1 px-4 sm:px-6 lg:px-8 py-8 -mt-4">
-        <section className="rounded-2xl bg-white shadow-sm border border-gray-100 overflow-hidden">
+        <section className="rounded-2xl bg-white p-5 shadow-sm border border-gray-100 overflow-hidden">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Bank Accounts</h2>
+              <p className="text-sm text-gray-600 mt-1">Manage bank accounts and their opening balances</p>
+            </div>
+          </div>
           {/* Summary Stats - Card row */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-6 bg-gray-50/50 border-b border-gray-100">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
             <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-[#7B0F2B]/10 flex items-center justify-center">
@@ -796,7 +803,7 @@ export default function BankAccountsPage() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mt-6">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-sm font-medium text-gray-700">Status:</span>
               <button

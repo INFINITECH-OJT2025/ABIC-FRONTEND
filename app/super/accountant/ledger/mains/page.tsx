@@ -300,26 +300,36 @@ export default function MainsPage() {
 
 
   return (
-    <div className="min-h-full flex flex-col">
-      <div className="sticky top-0 z-20 shrink-0 bg-gradient-to-r from-[#7B0F2B] via-[#8B1535] to-[#A4163A] text-white px-6 py-5 flex items-center justify-between border-b border-[#6A0D25]/30">
-        <div>
-          <h1 className="text-lg font-semibold tracking-wide">Mains Ledger</h1>
+    <div className="min-h-full flex flex-col bg-gray-50/80">
+      <div className="sticky top-0 z-20 bg-gray-50/80">
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white px-6 py-8">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50" />
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center border border-white/20">
+                <Building2 className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">Mains Ledger</h1>
+                <p className="text-white/80 text-sm mt-0.5">View mains transactions with running balance</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowTransactionPanel(true)}
+              className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold bg-white text-[#7B0F2B] hover:bg-white/95 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+            >
+              <Plus className="w-4 h-4" />
+              New Transaction
+            </button>
+          </div>
         </div>
-        <button
-          onClick={() => setShowTransactionPanel(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-md bg-white/20 hover:bg-white/30 text-white font-medium text-sm transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          New Transaction
-        </button>
       </div>
 
-
-      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
-        <section className="rounded-md bg-white p-5 shadow-sm border border-gray-200">
+      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-8 -mt-4">
+        <section className="rounded-2xl bg-white p-5 shadow-sm border border-gray-100 overflow-hidden">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-lg font-bold text-[#5f0c18]">Mains Ledger</h2>
+              <h2 className="text-lg font-bold text-gray-900">Mains Ledger</h2>
               <p className="text-sm text-gray-600 mt-1">View mains transactions with running balance</p>
             </div>
             {selectedOwnerId && <EndingBalance endingBalance={computed.endingBalance} />}
@@ -328,12 +338,12 @@ export default function MainsPage() {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mt-6">
             {/* Left: Account selector + Transactions search (when owner selected) */}
             <div className="flex items-center gap-2 flex-1 max-w-2xl">
-              <div className="flex items-center gap-2 text-sm font-medium text-[#7a0f1f]">
+              <div className="flex items-center gap-2 text-sm font-medium text-[#7B0F2B]">
                 <Building2 className="w-4 h-4" />
                 <label>Mains</label>
               </div>
               <div className="relative flex-1 group min-w-[180px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none z-10 transition-colors group-hover:text-[#7a0f1f]/70" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none z-10 transition-colors group-hover:text-[#7B0F2B]/70" />
                 <input
                   type="text"
                   placeholder="Select main account..."
@@ -346,7 +356,7 @@ export default function MainsPage() {
                   }}
                   readOnly
                   disabled={loadingOwners}
-                  className="w-full rounded-md border border-gray-200 bg-white px-10 py-2 h-10 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-[#7a0f1f]/20 focus:border-[#7a0f1f] disabled:opacity-60 cursor-pointer transition-all hover:border-[#7a0f1f]/40 hover:bg-gray-50/50"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-10 py-2 h-10 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] disabled:opacity-60 cursor-pointer transition-all hover:border-[#7B0F2B]/40 hover:bg-gray-50/50"
                 />
                 {selectedOwnerId && (
                   <button
@@ -357,7 +367,7 @@ export default function MainsPage() {
                       // User manually cleared - always allow opening modal to select new owner
                       setShowOwnerSelectModal(true);
                     }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-[#7a0f1f] transition-colors p-0.5 rounded hover:bg-[#7a0f1f]/10"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-[#7B0F2B] transition-colors p-0.5 rounded hover:bg-[#7B0F2B]/10"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -365,23 +375,23 @@ export default function MainsPage() {
               </div>
               {selectedOwnerId && (
                 <>
-                  <div className="flex items-center gap-2 text-sm font-medium text-[#7a0f1f]">
+                  <div className="flex items-center gap-2 text-sm font-medium text-[#7B0F2B]">
                     <Receipt className="w-4 h-4" />
                     <label>Transactions</label>
                   </div>
                   <div className="relative flex-1 group min-w-[180px]">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none z-10 transition-colors group-hover:text-[#7a0f1f]/70" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none z-10 transition-colors group-hover:text-[#7B0F2B]/70" />
                     <input
                       type="text"
                       placeholder="Search transactions..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full rounded-md border border-gray-200 bg-white px-10 py-2 h-10 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-[#7a0f1f]/20 focus:border-[#7a0f1f] transition-all hover:border-[#7a0f1f]/40 hover:bg-gray-50/50"
+                      className="w-full rounded-xl border border-gray-200 bg-white px-10 py-2 h-10 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all hover:border-[#7B0F2B]/40 hover:bg-gray-50/50"
                     />
                     {searchQuery && (
                       <button
                         onClick={() => setSearchQuery("")}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-[#7a0f1f] transition-colors p-0.5 rounded hover:bg-[#7a0f1f]/10"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-[#7B0F2B] transition-colors p-0.5 rounded hover:bg-[#7B0F2B]/10"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -398,10 +408,10 @@ export default function MainsPage() {
                 <SortSelector value={dateCreatedSort} onChange={setDateCreatedSort} />
                 <button
                   onClick={() => setShowAdditionalColumns(!showAdditionalColumns)}
-                  className={`px-4 py-2 rounded-md border transition-all flex items-center gap-2 text-sm font-medium ${
+                  className={`px-4 py-2 rounded-xl border transition-all flex items-center gap-2 text-sm font-medium ${
                     showAdditionalColumns
-                      ? "bg-[#7a0f1f] text-white border-[#7a0f1f] shadow-sm"
-                      : "bg-white text-gray-700 border-gray-200 hover:border-[#7a0f1f] hover:text-[#7a0f1f]"
+                      ? "bg-[#7B0F2B] text-white border-[#7B0F2B] shadow-sm"
+                      : "bg-white text-gray-700 border-gray-200 hover:border-[#7B0F2B] hover:text-[#7B0F2B]"
                   }`}
                   title={showAdditionalColumns ? "Hide additional columns" : "Show additional columns"}
                 >
@@ -411,6 +421,19 @@ export default function MainsPage() {
               </div>
             )}
           </div>
+
+          {/* Empty State - No Owner Selected */}
+          {!selectedOwnerId && !loadingOwners && (
+            <div className="flex flex-col items-center justify-center py-16 px-4 rounded-2xl bg-gray-50/80 border-2 border-dashed border-gray-200 mt-6">
+              <div className="w-16 h-16 rounded-2xl bg-[#7B0F2B]/10 flex items-center justify-center mb-4">
+                <Building2 className="w-8 h-8 text-[#7B0F2B]" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No owner selected</h3>
+              <p className="text-sm text-gray-500 text-center max-w-md">
+                Select a main account above to view their ledger transactions. Click on the main field or press Ctrl+S (Cmd+S on Mac) to open the selection modal.
+              </p>
+            </div>
+          )}
 
           {/* Pagination Info */}
           {selectedOwnerId && (
@@ -430,7 +453,7 @@ export default function MainsPage() {
 
           {/* Transactions Table */}
           {selectedOwnerId && (
-            <div className="border border-gray-200 border-t-0 bg-white overflow-hidden rounded-b-md">
+            <div className="border border-gray-100 border-t-0 bg-white overflow-hidden rounded-b-2xl">
             {loadingTransactions ? (
               <LoadingSkeleton count={5} />
             ) : computed.computedRows.length === 0 ? (

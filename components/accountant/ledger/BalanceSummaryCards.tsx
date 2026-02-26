@@ -29,8 +29,8 @@ export function EndingBalance({ endingBalance }: EndingBalanceProps) {
     <div
       className={`flex items-center justify-end
         px-4 py-3 -me-5 transition-all
-        bg-[#7a0f1f] text-white
-        rounded-l-md rounded-tr-none rounded-br-none
+        bg-[#7B0F2B] text-white
+        rounded-l-xl rounded-tr-none rounded-br-none
         min-w-[180px]`}
     >
       

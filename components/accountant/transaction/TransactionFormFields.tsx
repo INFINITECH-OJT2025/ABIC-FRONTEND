@@ -12,6 +12,7 @@ interface TransactionFormFieldsProps {
   onFieldErrorChange: (errors: Partial<FieldErrors>) => void;
   onAmountChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   excludeVoucherFields?: boolean; // Option to exclude voucher fields when handled separately
+  balanceWarning?: string; // Warning message to show below amount field
 }
 
 export default function TransactionFormFields({
@@ -22,6 +23,7 @@ export default function TransactionFormFields({
   onFieldErrorChange,
   onAmountChange,
   excludeVoucherFields = false,
+  balanceWarning,
 }: TransactionFormFieldsProps) {
   return (
     <>
@@ -108,6 +110,11 @@ export default function TransactionFormFields({
         {fieldErrors.amount && (
           <p className="mt-2 text-sm font-semibold text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
             {fieldErrors.amount}
+          </p>
+        )}
+        {!fieldErrors.amount && balanceWarning && (
+          <p className="mt-2 text-sm font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
+            {balanceWarning}
           </p>
         )}
       </div>

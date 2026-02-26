@@ -14,7 +14,6 @@ type OwnerStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED";
 
 type Owner = {
   id: number;
-  owner_code?: string | null;
   owner_type: OwnerType;
   name: string;
   description?: string | null;
@@ -309,6 +308,8 @@ export default function OwnersPage() {
     property_id: null as number | null,
     status: "ACTIVE" as UnitStatus,
     notes: "",
+    opening_balance: "",
+    opening_date: new Date().toISOString().split("T")[0],
   });
   const [savingUnit, setSavingUnit] = useState(false);
   const [showUnitLoading, setShowUnitLoading] = useState(false);
@@ -928,6 +929,8 @@ export default function OwnersPage() {
         property_id: unit.property_id || null,
         status: editableStatus as UnitStatus,
         notes: unit.notes || "",
+        opening_balance: "",
+        opening_date: new Date().toISOString().split("T")[0],
       });
       // Set property search query to show selected property name
       if (unit.property_id && unit.property) {
@@ -949,6 +952,8 @@ export default function OwnersPage() {
         property_id: null,
         status: "ACTIVE",
         notes: "",
+        opening_balance: "",
+        opening_date: new Date().toISOString().split("T")[0],
       });
       setPropertySearchQuery("");
     }
@@ -964,6 +969,8 @@ export default function OwnersPage() {
       property_id: null,
       status: "ACTIVE",
       notes: "",
+      opening_balance: "",
+      opening_date: new Date().toISOString().split("T")[0],
     });
     setPropertySearchQuery("");
     setShowPropertyDropdown(false);
@@ -1013,6 +1020,12 @@ export default function OwnersPage() {
           unit_name: unitFormData.unit_name.trim().toUpperCase(),
           status: statusToSend,
           notes: unitFormData.notes.trim() || null,
+          opening_balance: !editingUnit && unitFormData.opening_balance && parseFloat(String(unitFormData.opening_balance).replace(/,/g, "")) > 0
+            ? parseFloat(String(unitFormData.opening_balance).replace(/,/g, ""))
+            : null,
+          opening_date: !editingUnit && unitFormData.opening_balance && parseFloat(String(unitFormData.opening_balance).replace(/,/g, "")) > 0 && unitFormData.opening_date
+            ? unitFormData.opening_date
+            : null,
         }),
       });
 
@@ -1183,8 +1196,8 @@ export default function OwnersPage() {
 
   return (
     <div className="min-h-full flex flex-col bg-gray-50/80">
-      {/* Header - Hero style, sticky */}
-      <div className="sticky top-0 z-20 shrink-0 relative overflow-hidden bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white px-6 py-8">
+      <div className="sticky top-0 z-20 bg-gray-50/80">
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#7B0F2B] via-[#8B1535] to-[#5E0C20] text-white px-6 py-8">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50" />
         <div className="relative flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -1204,12 +1217,19 @@ export default function OwnersPage() {
             Create Owner
           </button>
         </div>
+        </div>
       </div>
 
       <div className="flex-1 px-4 sm:px-6 lg:px-8 py-8 -mt-4">
-        <section className="rounded-2xl bg-white shadow-sm border border-gray-100 overflow-hidden">
+        <section className="rounded-2xl bg-white p-5 shadow-sm border border-gray-100 overflow-hidden">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Owners</h2>
+              <p className="text-sm text-gray-600 mt-1">Manage clients, companies, and fund owners</p>
+            </div>
+          </div>
           {/* Summary Stats - Card row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-gray-50/50 border-b border-gray-100">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
             <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-[#7B0F2B]/10 flex items-center justify-center">
@@ -1256,7 +1276,7 @@ export default function OwnersPage() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between p-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mt-6">
             {/* Filters Section */}
             <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
@@ -1504,17 +1524,6 @@ export default function OwnersPage() {
                 ) : (
                   <div className="flex-1 overflow-y-auto p-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-900 mb-2">
-                          Owner Code
-                        </label>
-                        <input
-                          type="text"
-                          value={detailFormData.owner_code || ""}
-                          disabled
-                          className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none bg-gray-50 text-gray-600 cursor-not-allowed"
-                        />
-                      </div>
                       <div>
                         <label className="block text-sm font-medium text-neutral-900 mb-2">
                           Owner Type <span className="text-red-500">*</span>
@@ -1983,6 +1992,41 @@ export default function OwnersPage() {
                     rows={3}
                   />
                 </div>
+                {!editingUnit && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-900 mb-2">Opening Balance (optional)</label>
+                      <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₱</span>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={unitFormData.opening_balance}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/,/g, "").replace(/[^\d.]/g, "");
+                            if (raw === "" || /^\d*\.?\d{0,2}$/.test(raw)) {
+                              setUnitFormData({ ...unitFormData, opening_balance: raw });
+                            }
+                          }}
+                          className="w-full rounded-xl border border-gray-200 pl-10 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
+                          placeholder="0.00"
+                        />
+                      </div>
+                    </div>
+                    {unitFormData.opening_balance && parseFloat(String(unitFormData.opening_balance)) > 0 && (
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-900 mb-2">Opening Date</label>
+                        <input
+                          type="date"
+                          value={unitFormData.opening_date}
+                          onChange={(e) => setUnitFormData({ ...unitFormData, opening_date: e.target.value })}
+                          max={new Date().toISOString().split("T")[0]}
+                          className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
             <div className="flex-shrink-0 flex items-center justify-end gap-3 p-5 border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">

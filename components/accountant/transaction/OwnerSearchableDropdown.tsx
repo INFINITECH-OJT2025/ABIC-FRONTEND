@@ -61,9 +61,11 @@ export default function OwnerSearchableDropdown({
 
   return (
     <div className="relative" data-field-error={error ? true : undefined}>
-      <label className="block text-sm font-medium mb-2 text-gray-900">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
+      {label && (
+        <label className="block text-sm font-medium mb-2 text-gray-900">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+      )}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none" />
         <input

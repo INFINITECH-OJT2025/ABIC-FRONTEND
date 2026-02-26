@@ -8,6 +8,7 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const ownerId = searchParams.get("owner_id");
+    const status = searchParams.get("status");
 
     const backendUrl =
       process.env.BACKEND_URL ?? "http://127.0.0.1:8000";
@@ -15,6 +16,9 @@ export async function GET(req: Request) {
     const url = new URL(`${backendUrl}/api/accountant/maintenance/units`);
     if (ownerId) {
       url.searchParams.append("owner_id", ownerId);
+    }
+    if (status) {
+      url.searchParams.append("status", status);
     }
 
     const backendRes = await fetch(url.toString(), {

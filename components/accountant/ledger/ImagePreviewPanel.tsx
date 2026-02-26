@@ -110,15 +110,6 @@ export function ImagePreviewPanel({
                   <div className="text-sm text-gray-900 font-medium">{imageName || "—"}</div>
                 </div>
               </div>
-              {fileType && (
-                <div className="flex items-start gap-3">
-                  <ImageIcon className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <div className="text-xs font-medium text-gray-500 mb-1">File Type</div>
-                    <div className="text-sm text-gray-900">{fileType}</div>
-                  </div>
-                </div>
-              )}
               <div className="flex items-start gap-3">
                 <Calendar className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
                 <div>

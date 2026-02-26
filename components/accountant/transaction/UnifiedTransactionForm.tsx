@@ -69,7 +69,8 @@ export default function UnifiedTransactionForm({
   };
 
   const [voucherMode, setVoucherMode] = useState<"WITH_VOUCHER" | "NO_VOUCHER">("WITH_VOUCHER");
-  
+  const [saveToUnitLedger, setSaveToUnitLedger] = useState(false);
+
   const [formData, setFormData] = useState<TransactionFormData>({
     voucher_date: "",
     voucher_no: "",
@@ -126,8 +127,22 @@ export default function UnifiedTransactionForm({
     property_id: null as number | null,
     status: "ACTIVE" as string,
     notes: "",
+    opening_balance: "",
+    opening_date: new Date().toISOString().split("T")[0],
   });
   const [propertySearchQuery, setPropertySearchQuery] = useState("");
+
+  // Non-existing unit confirmation (when user typed unit but didn't create/select)
+  const [showCreateUnitFromSubmitConfirmation, setShowCreateUnitFromSubmitConfirmation] = useState(false);
+  const [pendingUnitNameForCreate, setPendingUnitNameForCreate] = useState("");
+  const [pendingSubmitAfterCreate, setPendingSubmitAfterCreate] = useState(false);
+  
+  // Empty unit confirmation (when unit field is empty)
+  const [showEmptyUnitConfirmation, setShowEmptyUnitConfirmation] = useState(false);
+
+  // MAIN owner balance for withdrawal validation
+  const [mainOwnerBalance, setMainOwnerBalance] = useState<number | null>(null);
+  const [loadingMainBalance, setLoadingMainBalance] = useState(false);
 
   // Modal States
   const [showCreateTransactionLoading, setShowCreateTransactionLoading] = useState(false);
@@ -195,16 +210,15 @@ export default function UnifiedTransactionForm({
   }, [toOwners, toOwnerSearchQuery]);
 
   const filteredUnits = useMemo(() => {
+    let base = units.filter((unit) => unit.status === "ACTIVE");
     if (!unitSearchQuery.trim()) {
-      return units.filter((unit) => unit.status === "ACTIVE");
+      return base;
     }
-    
     const q = unitSearchQuery.trim();
-    return units.filter(
+    return base.filter(
       (unit) =>
-        unit.status === "ACTIVE" &&
-        (fuzzyMatch(unit.unit_name || "", q) ||
-        unit.unit_name?.toLowerCase().includes(q.toLowerCase()))
+        fuzzyMatch(unit.unit_name || "", q) ||
+        unit.unit_name?.toLowerCase().includes(q.toLowerCase())
     );
   }, [units, unitSearchQuery]);
 
@@ -297,6 +311,51 @@ export default function UnifiedTransactionForm({
     fetchUnits(formData.to_owner_id);
   }, [formData.to_owner_id]);
 
+  // Fetch MAIN owner balance for withdrawal validation
+  const fetchMainOwnerBalance = async (ownerId: number) => {
+    if (mode !== "WITHDRAWAL") {
+      setMainOwnerBalance(null);
+      return;
+    }
+
+    setLoadingMainBalance(true);
+    try {
+      const res = await fetch(`/api/accountant/ledger/mains?owner_id=${ownerId}&sort=newest`);
+      const data = await res.json();
+      if (res.ok && data.success) {
+        const transactions = data.data?.transactions || [];
+        // Get the first transaction's running balance (newest first), or opening balance if no transactions
+        if (transactions.length > 0) {
+          const latestTransaction = transactions[0];
+          setMainOwnerBalance(latestTransaction.outsBalance || data.data?.openingBalance || 0);
+        } else {
+          setMainOwnerBalance(data.data?.openingBalance || 0);
+        }
+      } else {
+        setMainOwnerBalance(null);
+      }
+    } catch (error) {
+      console.error("Error fetching MAIN owner balance:", error);
+      setMainOwnerBalance(null);
+    } finally {
+      setLoadingMainBalance(false);
+    }
+  };
+
+  useEffect(() => {
+    if (mode === "WITHDRAWAL" && formData.from_owner_id) {
+      const selectedOwner = fromOwners.find(owner => owner.id === formData.from_owner_id);
+      if (selectedOwner && selectedOwner.owner_type === "MAIN") {
+        fetchMainOwnerBalance(formData.from_owner_id);
+      } else {
+        setMainOwnerBalance(null);
+      }
+    } else {
+      setMainOwnerBalance(null);
+    }
+  }, [mode, formData.from_owner_id, fromOwners]);
+
+
   useEffect(() => {
     if (formData.from_owner_id && fromOwners.length > 0) {
       const selectedOwner = fromOwners.find(owner => owner.id === formData.from_owner_id);
@@ -319,6 +378,7 @@ export default function UnifiedTransactionForm({
       setFormData({ ...formData, unit_id: null, unit_name: "" });
       setUnitSearchQuery("");
       setUnits([]);
+      setSaveToUnitLedger(false);
     }
   }, [formData.to_owner_id, toOwners]);
 
@@ -357,6 +417,31 @@ export default function UnifiedTransactionForm({
   }, [prefillToOwnerId, toOwners]);
 
   /* ================= CONDITIONS ================= */
+
+  const toOwnerHasUnits = units.length > 0;
+  const selectedToOwner = toOwners.find((o) => o.id === formData.to_owner_id);
+  const showUnitSection = formData.to_owner_id && selectedToOwner && ['CLIENT', 'COMPANY'].includes(selectedToOwner.owner_type ?? '');
+
+  // Calculate balance warning for withdrawal
+  const balanceWarning = React.useMemo(() => {
+    if (mode !== "WITHDRAWAL" || mainOwnerBalance === null || !formData.amount) {
+      return undefined;
+    }
+
+    const withdrawalAmount = parseFloat(formData.amount.replace(/,/g, "")) || 0;
+    if (isNaN(withdrawalAmount) || withdrawalAmount <= 0) {
+      return undefined;
+    }
+
+    const projectedBalance = mainOwnerBalance - withdrawalAmount;
+    if (projectedBalance < 0) {
+      const formattedCurrent = formatAmount(mainOwnerBalance.toString());
+      const formattedProjected = formatAmount(Math.abs(projectedBalance).toString());
+      return `Warning: This withdrawal will result in a negative balance. Current balance: ${formattedCurrent}. Projected balance: -${formattedProjected}`;
+    }
+
+    return undefined;
+  }, [mode, mainOwnerBalance, formData.amount]);
 
   const requiresFileUpload =
     formData.transaction_type === "CHEQUE" ||
@@ -628,11 +713,12 @@ export default function UnifiedTransactionForm({
     }
 
     if (!formData.from_owner_id) {
-      errors.from_owner_id = "Main is required";
-    }
-    if (!formData.to_owner_id) {
-      errors.to_owner_id = "Owner is required";
-    }
+        errors.from_owner_id = "Main is required";
+      }
+      if (!formData.to_owner_id) {
+        errors.to_owner_id = "Owner is required";
+      }
+    // Unit is optional; we only prompt to create when user typed a non-existing unit
     if (!formData.amount || parseFloat(formData.amount.replace(/,/g, "")) <= 0) {
       errors.amount = "Amount must be greater than 0";
     }
@@ -642,7 +728,6 @@ export default function UnifiedTransactionForm({
     if (formData.particulars.length > 500) {
       errors.particulars = "Particulars must not exceed 500 characters";
     }
-    // Validate voucher requirements
     if (voucherMode === "WITH_VOUCHER") {
       if (!voucherFile) {
         errors.voucher_no = "Voucher file is required when voucher mode is selected";
@@ -652,7 +737,6 @@ export default function UnifiedTransactionForm({
       }
     }
 
-    // Validate file upload requirements for CHEQUE and DEPOSIT SLIP
     if (requiresFileUpload && uploadedFiles.length === 0) {
       // Use a custom error key for file upload
       (errors as any).fileUpload = `${formData.transaction_type === "CHEQUE" ? "Cheque" : "Deposit slip"} numbers upload is required`;
@@ -686,11 +770,31 @@ export default function UnifiedTransactionForm({
       return;
     }
 
+    // If user typed a unit name that doesn't exist, ask if they want to create it
+    // Check regardless of saveToUnitLedger checkbox - user might want to create it
+    const hasUnmatchedUnit =
+      !!unitSearchQuery.trim() &&
+      !formData.unit_id &&
+      filteredUnits.length === 0;
+
+    if (hasUnmatchedUnit) {
+      setPendingUnitNameForCreate(unitSearchQuery.trim());
+      setShowCreateUnitFromSubmitConfirmation(true);
+      return;
+    }
+
+    // If unit field is empty, ask for confirmation
+    const isUnitEmpty = !formData.unit_id && !unitSearchQuery.trim();
+    if (isUnitEmpty && showUnitSection) {
+      setShowEmptyUnitConfirmation(true);
+      return;
+    }
+
     // Show confirmation modal before creating transaction
     setShowCreateTransactionConfirmation(true);
   };
 
-  const handleSubmitConfirm = async () => {
+  const handleSubmitConfirm = async (unitOverride?: { unit_id: number; unit_name: string }) => {
     setShowCreateTransactionConfirmation(false);
     setShowCreateTransactionLoading(true);
 
@@ -700,14 +804,15 @@ export default function UnifiedTransactionForm({
         : "/api/accountant/transactions/withdrawal";
 
       const formDataToSend = new FormData();
-      
+      const effectiveUnitId = unitOverride?.unit_id ?? formData.unit_id;
       const transactionPayload = {
         voucher_date: voucherMode === "WITH_VOUCHER" && formData.voucher_date ? formData.voucher_date : null,
         voucher_no: voucherMode === "WITH_VOUCHER" && formData.voucher_no ? formData.voucher_no : null,
         trans_type: formData.transaction_type,
         from_owner_id: formData.from_owner_id,
         to_owner_id: formData.to_owner_id,
-        unit_id: formData.unit_id || null,
+        unit_id: effectiveUnitId || null, // Always include unit_id if selected (for display in particulars)
+        save_to_unit_ledger: saveToUnitLedger, // Flag to determine if entry goes to unit-specific ledger
         amount: parseFloat(formData.amount.replace(/,/g, "")),
         fund_reference: formData.fund_reference.trim() || null,
         particulars: formData.particulars.trim(),
@@ -977,6 +1082,12 @@ export default function UnifiedTransactionForm({
           unit_name: createUnitForm.unit_name.trim().toUpperCase(),
           status: "ACTIVE",
           notes: createUnitForm.notes?.trim() ? createUnitForm.notes.trim().toUpperCase() : null,
+          opening_balance: createUnitForm.opening_balance && parseFloat(createUnitForm.opening_balance.replace(/,/g, "")) > 0
+            ? parseFloat(createUnitForm.opening_balance.replace(/,/g, ""))
+            : null,
+          opening_date: createUnitForm.opening_balance && parseFloat(createUnitForm.opening_balance.replace(/,/g, "")) > 0 && createUnitForm.opening_date
+            ? createUnitForm.opening_date
+            : null,
         }),
       });
       const data = await res.json();
@@ -986,7 +1097,7 @@ export default function UnifiedTransactionForm({
         setLastCreatedUnitName(unitName);
         await fetchUnits(formData.to_owner_id);
         if (data.data?.id) {
-          setFormData({ ...formData, unit_id: data.data.id, unit_name: data.data.unit_name });
+          setFormData((prev) => ({ ...prev, unit_id: data.data.id, unit_name: data.data.unit_name }));
           setUnitSearchQuery(data.data.unit_name);
         }
         setShowCreateUnitPanel(false);
@@ -995,9 +1106,18 @@ export default function UnifiedTransactionForm({
           property_id: null,
           status: "ACTIVE",
           notes: "",
+          opening_balance: "",
+          opening_date: new Date().toISOString().split("T")[0],
         });
         setPropertySearchQuery("");
-        setShowCreateUnitSuccess(true);
+        if (pendingSubmitAfterCreate && data.data?.id) {
+          setPendingSubmitAfterCreate(false);
+          setShowCreateUnitSuccess(false);
+          setShowCreateUnitLoading(false);
+          await handleSubmitConfirm({ unit_id: data.data.id, unit_name: data.data.unit_name });
+        } else {
+          setShowCreateUnitSuccess(true);
+        }
       } else {
         const errorMsg = data.message
           || (data.errors ? (Array.isArray(data.errors) ? data.errors.join(", ") : Object.values(data.errors).flat().join(", ")) : null)
@@ -1019,6 +1139,10 @@ export default function UnifiedTransactionForm({
     setShowFromOwnerDropdown(false);
     setShowToOwnerDropdown(false);
     setShowUnitDropdown(false);
+    setShowCreateUnitFromSubmitConfirmation(false);
+    setPendingUnitNameForCreate("");
+    setPendingSubmitAfterCreate(false);
+    setShowEmptyUnitConfirmation(false);
     
     setFormData({
       voucher_date: "",
@@ -1046,6 +1170,7 @@ export default function UnifiedTransactionForm({
     setFromOwnerSearchQuery("");
     setToOwnerSearchQuery("");
     setUnitSearchQuery("");
+    setSaveToUnitLedger(false);
   };
 
   const handleResetConfirm = () => {
@@ -1308,36 +1433,41 @@ export default function UnifiedTransactionForm({
 
                     {/* Main */}
                     <div className="md:col-span-2">
-                      <OwnerSearchableDropdown
-                  label="Main"
-                  placeholder="Search main..."
-                  value={formData.from_owner_id}
-                  searchQuery={fromOwnerSearchQuery}
-                  owners={fromOwners}
-                  filteredOwners={filteredFromOwners}
-                  loading={loadingFromOwners}
-                  error={fieldErrors.from_owner_id}
-                  onSelect={(ownerId) => {
-                    setFormData({ ...formData, from_owner_id: ownerId });
-                    if (fieldErrors.from_owner_id) {
-                      setFieldErrors({ ...fieldErrors, from_owner_id: undefined });
-                    }
-                  }}
-                  onClear={() => {
-                    setFormData({ ...formData, from_owner_id: null });
-                    setFromOwnerSearchQuery("");
-                  }}
-                  onSearchChange={(query) => {
-                    setFromOwnerSearchQuery(query);
-                    if (fieldErrors.from_owner_id) {
-                      setFieldErrors({ ...fieldErrors, from_owner_id: undefined });
-                    }
-                  }}
-                  onShowDropdown={setShowFromOwnerDropdown}
-                  showDropdown={showFromOwnerDropdown}
-                        emptyMessage="No main found."
-                        noResultsMessage="No main found."
-                      />
+                        <div className="relative" data-field-error={fieldErrors.from_owner_id ? true : undefined}>
+                          <OwnerSearchableDropdown
+                            label="Main"
+                            placeholder="Search main..."
+                            value={formData.from_owner_id}
+                            searchQuery={fromOwnerSearchQuery}
+                            owners={fromOwners}
+                            filteredOwners={filteredFromOwners}
+                            loading={loadingFromOwners}
+                            error={fieldErrors.from_owner_id}
+                            onSelect={(ownerId) => {
+                              setFormData({ ...formData, from_owner_id: ownerId });
+                              if (fieldErrors.from_owner_id) {
+                                setFieldErrors({ ...fieldErrors, from_owner_id: undefined });
+                              }
+                            }}
+                            onClear={() => {
+                              setFormData({ ...formData, from_owner_id: null });
+                              setFromOwnerSearchQuery("");
+                            }}
+                            onSearchChange={(query) => {
+                              setFromOwnerSearchQuery(query);
+                              if (fieldErrors.from_owner_id) {
+                                setFieldErrors({ ...fieldErrors, from_owner_id: undefined });
+                              }
+                            }}
+                            onShowDropdown={setShowFromOwnerDropdown}
+                            showDropdown={showFromOwnerDropdown}
+                            emptyMessage="No main found."
+                            noResultsMessage="No main found."
+                          />
+                          {fieldErrors.from_owner_id && (
+                            <p className="mt-1 text-sm text-red-600">{fieldErrors.from_owner_id}</p>
+                        )}
+                      </div>
                     </div>
 
                     {/* Owner */}
@@ -1351,7 +1481,13 @@ export default function UnifiedTransactionForm({
                 loading={loadingToOwners}
                 error={fieldErrors.to_owner_id}
                 onSelect={(ownerId) => {
-                  setFormData({ ...formData, to_owner_id: ownerId });
+                  setFormData((prev) => ({
+                    ...prev,
+                    to_owner_id: ownerId,
+                    unit_id: prev.to_owner_id === ownerId ? prev.unit_id : null,
+                    unit_name: prev.to_owner_id === ownerId ? prev.unit_name : "",
+                  }));
+                  if (formData.to_owner_id !== ownerId) setUnitSearchQuery("");
                   if (fieldErrors.to_owner_id) {
                     setFieldErrors({ ...fieldErrors, to_owner_id: undefined });
                   }
@@ -1376,35 +1512,63 @@ export default function UnifiedTransactionForm({
                       noResultsMessage="No owners found"
                     />
 
-                    <UnitSearchCreateSection
-                formData={formData}
-                unitSearchQuery={unitSearchQuery}
-                showUnitDropdown={showUnitDropdown}
-                loadingUnits={loadingUnits}
-                filteredUnits={filteredUnits}
-                borderColor={BORDER}
-                unitRowBorderClass="border-t"
-                onUnitSearchChange={setUnitSearchQuery}
-                onShowUnitDropdown={setShowUnitDropdown}
-                onClearUnit={() => {
-                  setFormData({ ...formData, unit_id: null, unit_name: "" });
-                  setUnitSearchQuery("");
-                }}
-                onSelectUnit={(unit) => {
-                  setFormData({ ...formData, unit_id: unit.id, unit_name: unit.unit_name });
-                  setUnitSearchQuery(unit.unit_name);
-                }}
-                onCreateUnit={(unitName) => {
-                  setCreateUnitForm({
-                    unit_name: unitName,
-                    property_id: null,
-                    status: "ACTIVE",
-                    notes: "",
-                  });
-                  setPropertySearchQuery("");
-                      setShowCreateUnitPanel(true);
-                    }}
-                  />
+                    {showUnitSection && (
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <label className="block text-sm font-medium text-gray-900">
+                          Unit
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={saveToUnitLedger}
+                            onChange={(e) => {
+                              setSaveToUnitLedger(e.target.checked);
+                              if ((fieldErrors as any).unit_id) setFieldErrors({ ...fieldErrors, unit_id: undefined } as any);
+                            }}
+                            className="rounded border-gray-300 text-[#7B0F2B] focus:ring-[#7B0F2B]"
+                          />
+                          <span className="text-sm font-medium text-gray-700">Save to unit ledger</span>
+                        </label>
+                      </div>
+                      <UnitSearchCreateSection
+                        formData={formData}
+                        unitSearchQuery={unitSearchQuery}
+                        showUnitDropdown={showUnitDropdown}
+                        loadingUnits={loadingUnits}
+                        filteredUnits={filteredUnits}
+                        borderColor={BORDER}
+                        unitRowBorderClass="border-t"
+                        hideLabel={true}
+                        hasUnmatchedUnit={
+                          !!unitSearchQuery.trim() &&
+                          !formData.unit_id
+                        }
+                        onUnitSearchChange={setUnitSearchQuery}
+                        onShowUnitDropdown={setShowUnitDropdown}
+                        onClearUnit={() => {
+                          setFormData({ ...formData, unit_id: null, unit_name: "" });
+                          setUnitSearchQuery("");
+                        }}
+                        onSelectUnit={(unit) => {
+                          setFormData({ ...formData, unit_id: unit.id, unit_name: unit.unit_name });
+                          setUnitSearchQuery(unit.unit_name);
+                        }}
+                        onCreateUnit={(unitName) => {
+                          setCreateUnitForm({
+                            unit_name: unitName,
+                            property_id: null,
+                            status: "ACTIVE",
+                            notes: "",
+                            opening_balance: "",
+                            opening_date: new Date().toISOString().split("T")[0],
+                          });
+                          setPropertySearchQuery("");
+                          setShowCreateUnitPanel(true);
+                        }}
+                      />
+                    </div>
+                    )}
 
                   {/* Amount, Particulars, and Additional Info Fields */}
                   <TransactionFormFields
@@ -1415,6 +1579,7 @@ export default function UnifiedTransactionForm({
                     onFormDataChange={(data) => setFormData({ ...formData, ...data })}
                     onFieldErrorChange={(errors) => setFieldErrors({ ...fieldErrors, ...errors })}
                     onAmountChange={handleAmountChange}
+                    balanceWarning={balanceWarning}
                   />
                   </div>
                 </div>
@@ -1839,6 +2004,53 @@ export default function UnifiedTransactionForm({
         message={createUnitFailMessage}
       />
 
+      {/* Non-existing unit confirmation (typed unit but didn't create/select) */}
+      <ConfirmationModal
+        isOpen={showCreateUnitFromSubmitConfirmation}
+        onClose={() => {
+          setShowCreateUnitFromSubmitConfirmation(false);
+          setPendingUnitNameForCreate("");
+          setUnitSearchQuery("");
+          setFormData((prev) => ({ ...prev, unit_id: null, unit_name: "" }));
+          setShowCreateTransactionConfirmation(true);
+        }}
+        onConfirm={() => {
+          setShowCreateUnitFromSubmitConfirmation(false);
+          setCreateUnitForm({
+            unit_name: pendingUnitNameForCreate,
+            property_id: null,
+            status: "ACTIVE",
+            notes: "",
+            opening_balance: "",
+            opening_date: new Date().toISOString().split("T")[0],
+          });
+          setPropertySearchQuery("");
+          setShowCreateUnitPanel(true);
+          setPendingSubmitAfterCreate(true);
+          setPendingUnitNameForCreate("");
+        }}
+        title="Unit Does Not Exist"
+        message={`You inputted a unit but it does not exist. Do you wish to create it?`}
+        confirmText="Yes, Create Unit"
+        cancelText="No, Proceed Without Unit"
+      />
+
+      {/* Empty unit confirmation */}
+      <ConfirmationModal
+        isOpen={showEmptyUnitConfirmation}
+        onClose={() => {
+          setShowEmptyUnitConfirmation(false);
+        }}
+        onConfirm={() => {
+          setShowEmptyUnitConfirmation(false);
+          setShowCreateTransactionConfirmation(true);
+        }}
+        title="Unit Field is Empty"
+        message="Are you sure the unit is empty? The transaction will proceed without a unit."
+        confirmText="Yes, Proceed Without Unit"
+        cancelText="Cancel"
+      />
+
       {/* Create Owner Panel */}
       {showCreateOwnerPanel && (
         <CreateOwnerPanel
@@ -1868,11 +2080,14 @@ export default function UnifiedTransactionForm({
               <button
                 onClick={() => {
                   setShowCreateUnitPanel(false);
+                  setPendingSubmitAfterCreate(false);
                   setCreateUnitForm({
                     unit_name: "",
                     property_id: null,
                     status: "ACTIVE",
                     notes: "",
+                    opening_balance: "",
+                    opening_date: new Date().toISOString().split("T")[0],
                   });
                   setPropertySearchQuery("");
                 }}
@@ -1905,17 +2120,51 @@ export default function UnifiedTransactionForm({
                     rows={3}
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Opening Balance (optional)</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₱</span>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={createUnitForm.opening_balance ? formatCurrency(createUnitForm.opening_balance) : ""}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/,/g, "").replace(/[^\d.]/g, "");
+                        if (raw === "" || /^\d*\.?\d{0,2}$/.test(raw)) {
+                          setCreateUnitForm({ ...createUnitForm, opening_balance: raw });
+                        }
+                      }}
+                      className="w-full rounded-xl border border-gray-200 pl-10 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+                {createUnitForm.opening_balance && parseFloat(createUnitForm.opening_balance) > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Opening Date</label>
+                    <input
+                      type="date"
+                      value={createUnitForm.opening_date}
+                      onChange={(e) => setCreateUnitForm({ ...createUnitForm, opening_date: e.target.value })}
+                      max={new Date().toISOString().split("T")[0]}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#7B0F2B]/20 focus:border-[#7B0F2B] transition-all"
+                    />
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex items-center justify-end gap-3 p-5 border-t border-gray-100">
               <button
                 onClick={() => {
                   setShowCreateUnitPanel(false);
+                  setPendingSubmitAfterCreate(false);
                   setCreateUnitForm({
                     unit_name: "",
                     property_id: null,
                     status: "ACTIVE",
                     notes: "",
+                    opening_balance: "",
+                    opening_date: new Date().toISOString().split("T")[0],
                   });
                   setPropertySearchQuery("");
                 }}

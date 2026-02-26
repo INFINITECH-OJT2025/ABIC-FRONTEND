@@ -12,6 +12,9 @@ interface UnitSearchCreateSectionProps {
   filteredUnits: Unit[];
   borderColor: string;
   unitRowBorderClass?: "border-t" | "border-b";
+  hideLabel?: boolean;
+  /** When true, shows a highlighted "required-like" style (unit typed but not selected/created) */
+  hasUnmatchedUnit?: boolean;
   onUnitSearchChange: (query: string) => void;
   onShowUnitDropdown: (show: boolean) => void;
   onClearUnit: () => void;
@@ -27,6 +30,8 @@ export default function UnitSearchCreateSection({
   filteredUnits,
   borderColor,
   unitRowBorderClass = "border-b",
+  hideLabel = false,
+  hasUnmatchedUnit = false,
   onUnitSearchChange,
   onShowUnitDropdown,
   onClearUnit,
@@ -35,7 +40,14 @@ export default function UnitSearchCreateSection({
 }: UnitSearchCreateSectionProps) {
   return (
     <div className="relative">
-      <label className="block text-sm font-medium mb-2 text-gray-900">Unit</label>
+      {!hideLabel && (
+        <label className="block text-sm font-medium mb-2 text-gray-900">
+          Unit
+          {hasUnmatchedUnit && (
+            <span className="ml-1.5 text-amber-600 font-normal">(select or create)</span>
+          )}
+        </label>
+      )}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none" />
         <input
@@ -50,7 +62,9 @@ export default function UnitSearchCreateSection({
             if (formData.to_owner_id) onShowUnitDropdown(true);
           }}
           disabled={!formData.to_owner_id}
-          className="w-full rounded-md border px-10 py-2 h-10 text-sm text-gray-900 outline-none focus:ring-2 disabled:opacity-60 transition-all border-gray-200 bg-white focus:ring-[#7a0f1f]/20 focus:border-[#7a0f1f] disabled:bg-gray-50 disabled:cursor-not-allowed"
+          className={`w-full rounded-md border px-10 py-2 h-10 text-sm text-gray-900 outline-none focus:ring-2 disabled:opacity-60 transition-all border-gray-200 bg-white focus:ring-[#7a0f1f]/20 focus:border-[#7a0f1f] disabled:bg-gray-50 disabled:cursor-not-allowed ${
+            hasUnmatchedUnit ? "border-amber-500 bg-amber-50/50 ring-1 ring-amber-200" : ""
+          }`}
         />
         {formData.unit_id && (
           <button

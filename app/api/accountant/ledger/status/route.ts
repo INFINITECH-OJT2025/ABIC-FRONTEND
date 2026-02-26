@@ -8,20 +8,12 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const ownerId = searchParams.get("owner_id");
-    const unitId = searchParams.get("unit_id");
-    const sort = searchParams.get("sort");
 
     const backendUrl = process.env.BACKEND_URL ?? "http://127.0.0.1:8000";
 
-    const url = new URL(`${backendUrl}/api/accountant/ledger/company`);
+    const url = new URL(`${backendUrl}/api/accountant/ledger/status`);
     if (ownerId) {
       url.searchParams.append("owner_id", ownerId);
-    }
-    if (unitId) {
-      url.searchParams.append("unit_id", unitId);
-    }
-    if (sort) {
-      url.searchParams.append("sort", sort);
     }
 
     const backendRes = await fetch(url.toString(), {

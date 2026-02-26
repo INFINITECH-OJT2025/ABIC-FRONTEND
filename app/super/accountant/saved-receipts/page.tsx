@@ -348,25 +348,42 @@ export default function SavedReceiptsPage() {
                         setPanelClosing(false);
                         setSelectedReceipt(receipt);
                       }}
-                      className="group rounded-2xl border border-gray-100 overflow-hidden bg-white cursor-pointer hover:shadow-lg hover:border-[#7B0F2B]/30 hover:-translate-y-0.5 transition-all duration-200"
+                      className="group rounded-2xl border border-[#7B0F2B]/40 bg-white overflow-hidden cursor-pointer 
+                                hover:shadow-xl hover:border-[#7B0F2B] hover:-translate-y-0.5 
+                                transition-all duration-200"
                     >
-                      <div className="relative h-52 bg-gray-50">
+                      {/* Image Section */}
+                      <div className="relative h-52 bg-gray-50 border-b border-[#7B0F2B]/20 overflow-hidden">
                         {receipt.file_url ? (
-                          <img src={receipt.file_url} alt="" className="w-full h-full object-contain" />
+                          <img
+                            src={receipt.file_url}
+                            alt=""
+                            className="w-full h-full object-cover scale-105 group-hover:scale-110 transition-transform duration-300"
+                          />
                         ) : (
                           <div className="flex items-center justify-center h-full">
                             <FileText className="w-12 h-12 text-gray-400" />
                           </div>
                         )}
                       </div>
+
+                      {/* Bottom Content */}
                       <div className="bg-[#7B0F2B] p-4 text-white">
-                        <p className="text-sm font-semibold truncate">{receipt.display_name || "No Name"}</p>
+                        <p className="text-sm font-semibold truncate">
+                          {receipt.display_name || "No Name"}
+                        </p>
+
                         {receipt.transaction && (
-                          <p className="text-lg font-bold mt-1">{formatAmount(receipt.transaction.amount)}</p>
+                          <p className="text-lg font-bold mt-1">
+                            {formatAmount(receipt.transaction.amount)}
+                          </p>
                         )}
+
                         <div className="mt-3 text-xs text-white/90 flex items-center justify-between">
                           <span>{formatDate(receipt.created_at)}</span>
-                          <span className="font-medium opacity-0 group-hover:opacity-100 transition">Click to view</span>
+                          <span className="font-medium opacity-0 group-hover:opacity-100 transition">
+                            Click to view
+                          </span>
                         </div>
                       </div>
                     </div>

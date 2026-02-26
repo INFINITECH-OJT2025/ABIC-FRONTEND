@@ -11,7 +11,6 @@ type OwnerType = "COMPANY" | "CLIENT" | "MAIN";
 
 type Owner = {
   id: number;
-  owner_code?: string | null;
   owner_type: OwnerType;
   name: string;
   description?: string | null;
