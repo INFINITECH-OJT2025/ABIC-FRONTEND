@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Plus } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Plus, RefreshCcw } from "lucide-react";
 import PreviewSection from "./PreviewSection";
 import FormSection from "./FormSection";
 import { PrintableData } from "./types";
+import { toast } from "sonner";
 
 export default function PrintableView() {
   const [formData, setFormData] = useState<PrintableData>({
@@ -18,8 +19,8 @@ export default function PrintableView() {
     owner: "",
     receivedBy: "",
     approvedBy: "",
-    receivedFromSignature: "",
-    approvedBySignature: "",
+    receivedFromSignature: "/images/voucher/signature/ReceivedSignature.png",
+    approvedBySignature: "/images/voucher/signature/ApprovedSignature.png",
     checkDate: "",
     checkNo: "",
     accountName: "",
@@ -28,12 +29,96 @@ export default function PrintableView() {
     approvedByDate: "",
   });
 
+  const [isPreparing, setIsPreparing] = useState(false);
+
+  const prepareVoucher = useCallback(async () => {
+    try {
+      setIsPreparing(true);
+
+      const res = await fetch("/api/accountant/vouchers/prepare-cheque", {
+        method: "POST",
+        headers: { Accept: "application/json" },
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const message =
+          (typeof data?.message === "string" && data.message) ||
+          "Failed to generate voucher number.";
+        throw new Error(message);
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        voucherNo: data?.voucher_no ?? "",
+        receivedBy:
+          localStorage.getItem("voucher_cheque_receivedBy") ??
+          data?.received_by_name ??
+          prev.receivedBy,
+        approvedBy:
+          localStorage.getItem("voucher_cheque_approvedBy") ??
+          data?.approved_by_name ??
+          prev.approvedBy,
+      }));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to generate voucher number.";
+      toast.error(message);
+    } finally {
+      setIsPreparing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Load local overrides for signatures and names on mount
+    const savedReceivedBy = localStorage.getItem("voucher_cheque_receivedBy");
+    const savedApprovedBy = localStorage.getItem("voucher_cheque_approvedBy");
+    const savedReqSig = localStorage.getItem("voucher_cheque_receivedFromSignature");
+    const savedAppSig = localStorage.getItem("voucher_cheque_approvedBySignature");
+
+    setFormData((prev) => ({
+      ...prev,
+      receivedBy: savedReceivedBy !== null ? savedReceivedBy : prev.receivedBy,
+      approvedBy: savedApprovedBy !== null ? savedApprovedBy : prev.approvedBy,
+      receivedFromSignature: savedReqSig !== null ? savedReqSig : prev.receivedFromSignature,
+      approvedBySignature: savedAppSig !== null ? savedAppSig : prev.approvedBySignature,
+    }));
+
+    prepareVoucher();
+  }, [prepareVoucher]);
+
   const handleInputChange = (field: keyof PrintableData, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
+
+    if (typeof window !== "undefined") {
+      if (field === "receivedBy") localStorage.setItem("voucher_cheque_receivedBy", value);
+      if (field === "approvedBy") localStorage.setItem("voucher_cheque_approvedBy", value);
+      if (field === "receivedFromSignature") localStorage.setItem("voucher_cheque_receivedFromSignature", value);
+      if (field === "approvedBySignature") localStorage.setItem("voucher_cheque_approvedBySignature", value);
+    }
   };
+
+  const handleClearForm = useCallback(() => {
+    setFormData((prev) => ({
+      ...prev,
+      date: "",
+      paidTo: "",
+      projectDetails: "",
+      purpose: "",
+      note: "",
+      amount: "",
+      owner: "",
+      checkDate: "",
+      checkNo: "",
+      accountName: "",
+      accountNumber: "",
+      receivedFromDate: "",
+      approvedByDate: "",
+    }));
+    prepareVoucher();
+  }, [prepareVoucher]);
 
   return (
     <div className="min-h-full flex flex-col bg-gray-50/80">
@@ -49,13 +134,25 @@ export default function PrintableView() {
                 <h1 className="text-2xl font-bold tracking-tight">Cheque Voucher</h1>
                 <p className="text-white/80 text-sm mt-0.5">Printable generator</p>
               </div>
+
+              <div className="ml-auto">
+                <button
+                  type="button"
+                  onClick={prepareVoucher}
+                  disabled={isPreparing}
+                  className="inline-flex items-center gap-2 rounded-md bg-white/15 px-3 py-2 text-sm font-semibold text-white hover:bg-white/20 disabled:opacity-60"
+                >
+                  <RefreshCcw className="w-4 h-4" />
+                  {isPreparing ? "Generating..." : "Generate Voucher No"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
         <div className="max-w-[1600px] mx-auto px-6 space-y-10 py-8">
           {/* FORM SECTION (Row 1) */}
-          <FormSection formData={formData} onInputChange={handleInputChange} />
+          <FormSection formData={formData} onInputChange={handleInputChange} onClearForm={handleClearForm} />
 
           {/* PREVIEW SECTION (Row 2) */}
           <PreviewSection formData={formData} />
